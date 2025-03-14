@@ -1,0 +1,576 @@
+/* Import nowoczesnej czcionki Montserrat z Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+  /* Subtelny gradient w tle */
+  background: linear-gradient(120deg, #F1F1EF 0%, #F8F9FA 100%);
+  color: #333;
+}
+
+/* ============ NAVBAR ============ */
+.navbar {
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+/* Lewa część nawigacji (tytuł) */
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+/* Napis "QUBE" */
+.nav-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  text-decoration: none;
+}
+
+.nav-title:hover {
+  color: #8F9085; /* Efekt hover */
+}
+
+/* ============ GŁÓWNA SEKCJA (MAIN) ============ */
+main {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #F1F1EF 0%, #F8F9FA 70%); /* Subtelny gradient w tle */
+}
+
+/* Kontener na zawartość strony głównej (logo, przyciski) */
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px; /* Dodatkowe wypełnienie dla lepszego wyglądu */
+}
+
+/* Tekst powitalny */
+.welcome-text {
+  margin-bottom: 40px; /* Większy odstęp między tekstem a logiem */
+}
+
+.welcome-text h1 {
+  font-size: 2.5rem; /* Większy nagłówek */
+  color: #333333;
+  margin: 0;
+  font-weight: 600;
+}
+
+.welcome-text p {
+  font-size: 1.2rem; /* Lekko większy podtytuł */
+  color: #666666;
+  margin: 10px 0 0;
+}
+
+/* Logo – lekka animacja wejścia */
+.logo img {
+  width: 40vb; /* Zachowano elastyczną szerokość */
+  height: auto;
+  animation: fadeIn 1s ease-in-out;
+  margin-bottom: 40px; /* Większy odstęp między logiem a przyciskami */
+}
+
+/* Przyciski (główne) */
+.buttons {
+  margin-top: 0; /* Usunięto domyślny margines, sterujemy odstępami ręcznie */
+  display: flex;
+  gap: 20px; /* Odstęp między przyciskami */
+}
+
+.btn {
+  background-color: #8F9085;
+  color: #fff;
+  padding: 14px 28px; /* Nieco większe wypełnienie dla lepszego wyglądu */
+  border-radius: 30px;
+  text-decoration: none;
+  transition: background-color 0.3s, transform 0.3s;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Delikatny cień dla głębi */
+}
+
+.btn:hover {
+  background-color: #6D6E65;
+  transform: translateY(-3px); /* Nieco większy efekt podnoszenia */
+}
+
+/* Animacje */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============ FORMULARZE ============ */
+.form-container {
+  max-width: 500px; /* Zwiększona szerokość z 400px na 500px */
+  margin: 50px auto;
+  padding: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Nagłówek */
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+/* Formularz */
+.form-container form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Paragrafy generowane przez {{ form.as_p }} */
+.form-container form p {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+/* Etykiety */
+.form-container form label {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+/* Pola formularza */
+.form-container form input,
+.form-container form select,
+.form-container form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Opisy pól */
+.form-container form .helptext {
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+  margin-bottom: 10px;
+  text-align: left;
+  width: 100%;
+}
+
+/* Komunikaty błędów */
+.form-container .errorlist {
+  list-style-type: none;
+  padding: 0;
+  color: red;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: left;
+  width: 100%;
+}
+
+/* Przycisk */
+.form-container form .btn {
+  width: 250px; /* Zwiększona szerokość z 200px na 250px */
+  padding: 12px;
+  background-color: #8F9085;
+  border: none;
+  border-radius: 30px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin: 20px auto 0;
+  display: block;
+}
+
+.form-container form .btn:hover {
+  background-color: #6D6E65;
+  transform: translateY(-2px);
+}
+
+/* Link do logowania/rejestracji */
+.register-link, .login-link {
+  margin-top: 30px;
+  font-size: 14px;
+  color: #777;
+  text-align: center;
+}
+
+.register-link a, .login-link a {
+  color: #8F9085;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-link a:hover, .login-link a:hover {
+  text-decoration: underline;
+}
+
+/* ============ DASHBOARD ============ */
+.dashboard-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.dashboard-sidebar {
+  width: 30%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-sidebar h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #8F9085;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+/* Lista grup */
+.group-list {
+  list-style: none;
+  padding: 0;
+}
+
+/* Każda grupa jako karta */
+.group-item {
+  background: #f9f9f9;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efekt podniesienia przy najechaniu */
+.group-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Link do grupy */
+.group-link {
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Korona dla lidera grupy */
+.leader-crown {
+  font-size: 1.3rem;
+  color: gold;
+  position: absolute;
+  right: 10px;
+  top: 8px;
+}
+
+/* Pusta sekcja */
+.empty-text {
+  color: #777;
+  font-style: italic;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Prawy panel - Zadania */
+.dashboard-main {
+  width: 70%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-main h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #8F9085;
+  margin-bottom: 15px;
+}
+
+.dashboard-main ul {
+  list-style: none;
+  padding: 0;
+}
+
+.dashboard-main li {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+}
+
+.task-status {
+  font-weight: 600;
+}
+
+.task-status.completed {
+  color: green;
+}
+
+.task-status.pending {
+  color: orange;
+}
+
+/* ============ NAVBAR ============ */
+.nav-links {
+  margin-left: auto;
+}
+
+.nav-link logout {
+  color: red;
+}
+
+.nav-link {
+  margin-left: 15px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+}
+
+
+.nav-link:hover {
+  color: #8F9085;
+}
+
+.form-container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container form input,
+.form-container form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-container form .btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #8F9085;
+  border: none;
+  border-radius: 30px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.form-container form .btn:hover {
+  background-color: #6D6E65;
+  transform: translateY(-2px);
+}
+
+/* ============ CREATE GROUP VIEW ============ */
+.create-group-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.create-group-left {
+  flex: 3;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.create-group-right {
+  flex: 1;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.create-group-left h2,
+.create-group-right h3 {
+  margin-bottom: 15px;
+}
+
+/* Formularz tworzenia grupy */
+#createGroupForm label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+#createGroupForm input,
+#createGroupForm textarea {
+  width: 100%;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Lista członków (lewa strona) */
+.member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0; /* margines 20px na dole przed przyciskiem */
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  padding: 6px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.member-item span {
+  margin-right: 10px;
+}
+
+.member-item input.role-input {
+  width: 120px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+/* Lista użytkowników (prawa strona) */
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  background: #f9f9f9;
+  padding: 6px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+/* Kwadratowe przyciski */
+.square-btn {
+  width: 40px;        /* kwadrat 40x40 */
+  height: 40px;
+  border-radius: 4px; /* lekko zaokrąglone rogi */
+  font-size: 1.3rem;  /* większy tekst + / - */
+  font-weight: 600;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Zielony plus */
+.add-btn {
+  background-color: #3A7D3A; /* ciemniejszy zielony */
+}
+.add-btn:hover {
+  background-color: #2f6b2f;
+  transform: scale(1.05);
+}
+
+/* Czerwony minus */
+.remove-btn {
+  background-color: #a83232; /* ciemniejszy czerwony */
+}
+.remove-btn:hover {
+  background-color: #8f2a2a;
+  transform: scale(1.05);
+}
+
+/* Przycisk "Utwórz grupę" – węższy */
+.group-submit-btn {
+  margin-top: 20px;  /* większy odstęp od listy członków */
+  width: auto;       /* auto-szerokość */
+  padding: 10px 20px;
+  display: inline-block;
+  font-size: 16px;
+}
+
+
+/* ============ STOPKA ============ */
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  color: #333;
+}
+
+/* ============ ANIMACJE ============ */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,21 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="form-container">
+    <h2>Ustawienia konta</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset>
+            <legend>Zmiana danych użytkownika</legend>
+            {{ user_form.as_p }}
+        </fieldset>
+        
+        <fieldset>
+            <legend>Zmiana hasła</legend>
+            {{ password_form.as_p }}
+        </fieldset>
+        
+        <button type="submit" class="btn">💾 Zapisz zmiany</button>
+    </form>
+</div>
+{% endblock %}

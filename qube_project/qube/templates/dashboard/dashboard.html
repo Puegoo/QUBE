@@ -1,0 +1,42 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="dashboard-container">
+    <!-- Lewa sekcja: Grupy -->
+    <div class="dashboard-sidebar">
+        <h2>Twoje grupy</h2>
+        {% if user_groups %}
+            <ul class="group-list">
+                {% for group in user_groups %}
+                    <li class="group-item">
+                        <a href="{% url 'group_detail' group.uid %}" class="group-link">{{ group.name }}</a>
+                        {% if group in user_created_groups %}
+                            <span class="leader-crown">👑</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-text">Nie należysz do żadnej grupy.</p>
+        {% endif %}
+    </div>
+
+    <!-- Prawa sekcja: Zadania -->
+    <div class="dashboard-main">
+        <h2>Twoje zadania</h2>
+        {% if user_tasks %}
+            <ul class="task-list">
+                {% for task in user_tasks %}
+                    <li class="task-item">
+                        <span class="task-title">{{ task.title }}</span>
+                        <span class="task-status {% if task.status == 'done' %}completed{% elif task.status == 'in-progress' %}in-progress{% else %}pending{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-text">Nie masz przypisanych zadań.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

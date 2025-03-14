@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>QUBE</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <!-- Dynamiczny link do home lub dashboard -->
+            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}" class="nav-title">QUBE</a>
+
+            <!-- Linki dostępne tylko po zalogowaniu -->
+            {% if user.is_authenticated %}
+            <div class="nav-links">
+                <a href="{% url 'create_group' %}" class="nav-link">➕ Nowa grupa</a>
+                <a href="{% url 'settings' %}" class="nav-link">⚙️ Ustawienia</a>
+                <a href="{% url 'logout' %}" class="nav-link logout">🚪 Wyloguj</a>
+            </div>
+            {% else %}
+            <div class="nav-links">
+                <a href="{% url 'login' %}" class="nav-link">🔑 Zaloguj</a>
+                <a href="{% url 'register' %}" class="nav-link">🆕 Rejestracja</a>
+                <a href="{% url 'admin:index' %}" class="nav-link admin-link">⚙️</a>
+            </div>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 QUBE. Wszystkie prawa zastrzeżone.</p>
+    </footer>
+</body>
+</html>

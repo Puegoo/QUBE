@@ -1,0 +1,15 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-container">
+    <h2 style="text-align:center; margin-bottom:20px;">Logowanie</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Zaloguj się</button>
+    </form>
+    <p class="register-link">Nie masz konta? <a href="{% url 'register' %}">Zarejestruj się</a></p>
+</div>
+{% endblock %}

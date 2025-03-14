@@ -1,0 +1,46 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block content %}
+<div class="create-group-container">
+  <!-- LEWA STRONA - Formularz i lista członków -->
+  <div class="create-group-left">
+    <h2>Utwórz grupę</h2>
+    <form method="POST" id="createGroupForm">
+      {% csrf_token %}
+      
+      <label for="group_name">Nazwa grupy</label>
+      <input type="text" id="group_name" name="group_name" placeholder="Np. Zespół Backend" required>
+
+      <label for="group_description">Opis grupy</label>
+      <textarea id="group_description" name="group_description" rows="2" placeholder="Krótki opis grupy"></textarea>
+
+      <h4>Członkowie grupy</h4>
+      <ul id="memberList" class="member-list">
+        <!-- JavaScript wypełni tę listę -->
+      </ul>
+
+      <!-- Przycisk tworzenia grupy (mniejszy, auto-szerokość) -->
+      <button type="submit" class="btn group-submit-btn">➕ Utwórz grupę</button>
+    </form>
+  </div>
+
+  <!-- PRAWA STRONA - Lista wszystkich użytkowników z przyciskiem „+” -->
+  <div class="create-group-right">
+    <h3>Użytkownicy w systemie</h3>
+    <ul id="allUsersList" class="user-list">
+      {% for user in all_users %}
+        <li class="user-item" id="user_{{ user.username }}">
+          <span>{{ user.username }}</span>
+          <!-- Dodajemy klasy "square-btn add-btn" -->
+          <button type="button" class="square-btn add-btn" onclick="addMember('{{ user.username }}')">+</button>
+        </li>
+      {% empty %}
+        <li>Brak użytkowników</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}

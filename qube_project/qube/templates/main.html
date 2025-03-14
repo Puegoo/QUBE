@@ -1,0 +1,18 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-container">
+    <div class="welcome-text">
+        <h1>Witaj w QUBE</h1>
+        <p>Zarządzanie zadaniami dla firm informatycznych</p>
+    </div>
+    <div class="logo">
+        <img src="{% static 'images/QUBE_LOGO.png' %}" alt="QUBE Logo">
+    </div>
+    <div class="buttons">
+        <a href="{% url 'login' %}" class="btn">Zaloguj się</a>
+        <a href="{% url 'register' %}" class="btn">Zarejestruj się</a>
+    </div>
+</div>
+{% endblock %}

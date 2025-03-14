@@ -1,0 +1,11 @@
+{% extends 'master.html' %}
+
+{% block title %}Błąd serwera (500) - QUBE{% endblock %}
+
+{% block content %}
+<div class="text-center">
+  <h2>500</h2>
+  <p>Coś poszło nie tak. Spróbuj ponownie później.</p>
+  <a href="{% url 'home' %}" class="btn btn-primary">Powrót do strony głównej</a>
+</div>
+{% endblock %}
