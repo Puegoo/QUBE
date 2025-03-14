@@ -574,3 +574,105 @@ footer {
     transform: scale(1);
   }
 }
+
+/* ============ GROUP DETAIL VIEW ============ */
+.group-detail-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Lewa, środkowa, prawa kolumna */
+.group-detail-left,
+.group-detail-middle,
+.group-detail-right {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  flex: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.group-detail-left {
+  flex: 1.2; /* trochę większe miejsce */
+}
+
+.group-detail-middle {
+  flex: 1.5; /* środkowa ma najwięcej miejsca */
+}
+
+.group-detail-right {
+  flex: 1;
+}
+
+.group-detail-left h3,
+.group-detail-middle h3,
+.group-detail-right h3 {
+  margin-bottom: 15px;
+  border-bottom: 2px solid #8F9085;
+  padding-bottom: 5px;
+}
+
+/* Filtry zadań, itp. */
+.task-filters {
+  margin-bottom: 10px;
+}
+
+/* Listy */
+.task-list,
+.member-tasks-list,
+.member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-list li,
+.member-tasks-list li,
+.member-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.task-list li strong,
+.member-tasks-list li strong {
+  font-weight: 600;
+}
+
+/* Przykładowe przyciski w widoku */
+.add-task-btn,
+.add-member-btn {
+  margin-top: 15px;
+  background-color: #8F9085;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.add-task-btn:hover,
+.add-member-btn:hover {
+  background-color: #6D6E65;
+  transform: translateY(-2px);
+}
+
+/* Modal (opcjonalnie) */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none; /* lub block, zależnie jak zarządzasz JS */
+}
+
+.modal-content {
+  background: #fff;
+  width: 400px;
+  margin: 80px auto;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+}
