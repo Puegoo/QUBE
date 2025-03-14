@@ -21,8 +21,8 @@
             </div>
             {% else %}
             <div class="nav-links">
-                <a href="{% url 'login' %}" class="nav-link">🔑 Zaloguj</a>
-                <a href="{% url 'register' %}" class="nav-link">🆕 Rejestracja</a>
+                <a href="{% url 'login' %}" class="nav-link">Zaloguj</a>
+                <a href="{% url 'register' %}" class="nav-link">Rejestracja</a>
                 <a href="{% url 'admin:index' %}" class="nav-link admin-link">⚙️</a>
             </div>
             {% endif %}
@@ -37,5 +37,6 @@
     <footer>
         <p>&copy; 2025 QUBE. Wszystkie prawa zastrzeżone.</p>
     </footer>
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>

@@ -6,11 +6,14 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-from .models import Group, Task, UserNode  # ✅ Teraz tylko Neo4j!
+
+# Neo4j / neomodel importy
+from .models import Group, Task, UserNode, MemberRel
 from .forms import GroupForm, UserUpdateForm
 
 
 def main_view(request):
+    """Widok strony głównej."""
     return render(request, 'main.html')
 
 
@@ -20,7 +23,8 @@ def register_view(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            UserNode(username=user.username, email=user.email).save()  # ✅ Tworzenie użytkownika w Neo4j
+            # Tworzymy odpowiednika w Neo4j
+            UserNode(username=user.username, email=user.email).save()
             auth_login(request, user)
             messages.success(request, "Rejestracja zakończona sukcesem!")
             return redirect('dashboard')
@@ -58,14 +62,23 @@ def logout_view(request):
 def dashboard_view(request):
     user_node = UserNode.nodes.get(username=request.user.username)
 
-    # Grupy użytkownika (iteracja, żeby sprawdzić, czy user_node jest w members)
-    user_groups = [g for g in Group.nodes if user_node in g.members.all()]
+    # Grupy, w których user_node jest członkiem
+    user_groups = []
+    for g in Group.nodes:
+        if user_node in g.members.all():
+            user_groups.append(g)
 
     # Grupy, w których jest liderem
-    user_created_groups = [g for g in Group.nodes if g.leader.single() == user_node]
+    user_created_groups = []
+    for g in Group.nodes:
+        if g.leader.single() == user_node:
+            user_created_groups.append(g)
 
     # Zadania przypisane do użytkownika
-    user_tasks = [t for t in Task.nodes if user_node in t.assigned_to.all()]
+    user_tasks = []
+    for t in Task.nodes:
+        if user_node in t.assigned_to.all():
+            user_tasks.append(t)
 
     context = {
         'user_groups': user_groups,
@@ -75,13 +88,8 @@ def dashboard_view(request):
     return render(request, 'dashboard/dashboard.html', context)
 
 
-
 # ========== TWORZENIE GRUPY (Neo4j) ==========
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Group, UserNode, MemberRel
-from .forms import CreateGroupForm
+from .forms import CreateGroupForm  # jeżeli masz taką formę
 
 @login_required
 def create_group_view(request):
@@ -90,13 +98,11 @@ def create_group_view(request):
         description = request.POST.get("group_description", "")
         user = UserNode.nodes.get(username=request.user.username)
 
-        # Tworzymy węzeł Group w Neo4j
         group = Group(name=name).save()
         group.leader.connect(user)  # lider to aktualny user
-        # Ewentualnie można zapisać opis, jeśli dodasz "description" w modelu
 
-        # Dodajemy członków
-        members = request.POST.getlist("members")  # lista username
+        # Dodajemy członków (np. z listy "members")
+        members = request.POST.getlist("members")  # [username1, username2...]
         for username in members:
             try:
                 member_node = UserNode.nodes.get(username=username)
@@ -113,7 +119,7 @@ def create_group_view(request):
         messages.success(request, "Grupa została utworzona!")
         return redirect('dashboard')
 
-    # GET request
+    # GET
     all_users = UserNode.nodes.all()
     return render(request, 'dashboard/create_group.html', {'all_users': all_users})
 
@@ -148,85 +154,72 @@ def settings_view(request):
 # ========== GRUPA - STRONA SZCZEGÓŁOWA ==========
 @login_required
 def group_view(request):
+    """Poglądowy widok grupy (nieużywany?), do usunięcia lub dostosowania."""
     return render(request, 'group/group.html')
 
 
 @login_required
 def group_detail_view(request, uid):
+    """Widok szczegółów grupy."""
     try:
         group = Group.nodes.get(uid=uid)
     except Group.DoesNotExist:
-        messages.error(request, "Taka grupa nie istnieje.")
+        messages.error(request, "Nie ma takiej grupy.")
         return redirect('dashboard')
 
-    # Pobieramy aktualnego użytkownika
     user_node = UserNode.nodes.get(username=request.user.username)
+    is_leader = (group.leader.single() == user_node)
 
-    # Sprawdzamy, czy jest liderem (np. group.leader.single() == user_node)
-    is_leader = False
-    if group.leader.single() == user_node:
-        is_leader = True
+    # Członkowie i zadania
+    group_members = group.members.all()  # Neo4j set
+    all_tasks = group.tasks.all()        # zadania w grupie
 
-    # Przykładowy podział zadań:
-    # - "all_tasks" = wszystkie zadania w grupie (do filtra/lewej kolumny)
-    # - "member_tasks" = mapowanie {członek -> zadania}, do środkowej kolumny
-    # - "group_members" = lista/relacja group.members.all()
-    all_tasks = group.tasks.all()  # Zadania w grupie
-    group_members = group.members.all()
-    
-    # Tworzymy dict do wyświetlenia w środkowej kolumnie: { member -> [zadania] }
+    # Dostępni użytkownicy do dodania (tacy, którzy nie są w members)
+    all_users = UserNode.nodes.all()
+    available_users = [u for u in all_users if u not in group_members]
+
+    # --- Budowa 'user_tasks' (dla wyświetlania w lewej kolumnie) ---
+    # Jeżeli lider => user_tasks = all_tasks, wpp. user_tasks = zadania przypisane do user_node
+    if is_leader:
+        user_tasks = all_tasks
+    else:
+        user_tasks = []
+        for t in all_tasks:
+            if user_node in t.assigned_to.all():
+                user_tasks.append(t)
+
+    # --- Budowa member_tasks do środkowej kolumny ---
+    # Słownik: {username: [lista_zadan]}
     member_tasks = {}
-    for member in group_members:
-        member_tasks[member.username] = []
-    for task in all_tasks:
-        # Zadanie przypisane do kogoś?
-        assigned_list = task.assigned_to.all()
-        for assigned_user in assigned_list:
-            if assigned_user.username in member_tasks:
-                member_tasks[assigned_user.username].append(task)
-    
+    for m in group_members:
+        member_tasks[m.username] = []
+
+    for t in all_tasks:
+        for assigned_u in t.assigned_to.all():
+            if assigned_u in group_members:
+                member_tasks[assigned_u.username].append(t)
+
+    # --- Budowa member_roles do prawej kolumny ---
+    # Słownik: {username: rola}
+    member_roles = {}
+    for m in group_members:
+        rel = group.members.relationship(m)  # rel -> MemberRel
+        if rel and rel.role:
+            member_roles[m.username] = rel.role
+        else:
+            member_roles[m.username] = ""
+
     context = {
         'group': group,
-        'is_leader': is_leader,
-        'all_tasks': all_tasks,
         'group_members': group_members,
+        'all_tasks': all_tasks,
+        'user_tasks': user_tasks,
         'member_tasks': member_tasks,
+        'member_roles': member_roles,
+        'is_leader': is_leader,
+        'available_users': available_users,
     }
     return render(request, 'group/group_detail.html', context)
-
-@login_required
-def add_task_view(request, uid):
-    try:
-        group = Group.nodes.get(uid=uid)  # pobieramy grupę po uid
-    except Group.DoesNotExist:
-        messages.error(request, "Nie znaleziono grupy o podanym UID.")
-        return redirect('dashboard')
-    
-    if request.method == "POST":
-        title = request.POST.get("title")
-        assigned_user = request.POST.get("assigned_user")  # username
-        status = request.POST.get("status")
-        priority = request.POST.get("priority")
-        description = request.POST.get("description")
-
-        # Tworzymy obiekt Task w Neo4j
-        new_task = Task(title=title, status=status).save()
-        # Możesz też zapisać priority, description jeśli masz takie pola w Task
-        
-        try:
-            user_node = UserNode.nodes.get(username=assigned_user)
-            new_task.assigned_to.connect(user_node)
-        except UserNode.DoesNotExist:
-            messages.warning(request, f"Nie znaleziono użytkownika: {assigned_user}")
-
-        # Dodajemy zadanie do grupy
-        group.tasks.connect(new_task)
-
-        messages.success(request, f"Zadanie '{title}' zostało dodane.")
-        return redirect('group_detail', uid=uid)
-    else:
-        # GET – jeśli chcemy wyświetlić np. formularz w oddzielnym widoku
-        return render(request, 'group/add_task_form.html', {'group': group})
 
 
 @login_required
@@ -234,29 +227,76 @@ def add_member_view(request, uid):
     try:
         group = Group.nodes.get(uid=uid)
     except Group.DoesNotExist:
-        messages.error(request, "Nie znaleziono grupy.")
-        return redirect('dashboard')  # albo inny fallback
+        messages.error(request, "Taka grupa nie istnieje.")
+        return redirect('dashboard')
+
+    user_node = UserNode.nodes.get(username=request.user.username)
+    is_leader = (group.leader.single() == user_node)
+    if not is_leader:
+        messages.error(request, "Nie masz uprawnień do dodawania członków w tej grupie.")
+        return redirect('group_detail', uid=uid)
 
     if request.method == 'POST':
         new_member_username = request.POST.get('new_member_username')
-        new_member_role = request.POST.get('new_member_role')  # jeśli chcesz przypisać rolę w relacji
-        try:
-            user_node = UserNode.nodes.get(username=new_member_username)
-            # Dodajemy do relacji group.members
-            group.members.connect(user_node)
-            
-            # Jeśli chcesz ustawić rolę w relacji (MemberRel), np.:
-            if new_member_role:
-                rel = group.members.relationship(user_node)
-                rel.role = new_member_role
-                rel.save()
-            
-            messages.success(request, f"Dodano członka: {new_member_username}")
-        except UserNode.DoesNotExist:
-            messages.error(request, "Taki użytkownik nie istnieje.")
+        new_member_role = request.POST.get('new_member_role')
 
+        try:
+            new_member_node = UserNode.nodes.get(username=new_member_username)
+        except UserNode.DoesNotExist:
+            messages.error(request, f"Użytkownik '{new_member_username}' nie istnieje.")
+            return redirect('group_detail', uid=uid)
+
+        # Dodajemy usera do members
+        group.members.connect(new_member_node)
+
+        # Ustawiamy rolę w relacji
+        if new_member_role:
+            rel = group.members.relationship(new_member_node)
+            rel.role = new_member_role
+            rel.save()
+
+        messages.success(request, f"Dodano użytkownika '{new_member_username}' z rolą '{new_member_role}'.")
         return redirect('group_detail', uid=uid)
     else:
-        # GET – ewentualnie wyświetlasz jakiś inny formularz?
-        context = {'group': group}
-        return render(request, 'group/add_member_form.html', context)
+        # GET
+        return redirect('group_detail', uid=uid)
+
+@login_required
+def add_task_view(request, uid):
+    try:
+        group = Group.nodes.get(uid=uid)
+    except Group.DoesNotExist:
+        messages.error(request, "Taka grupa nie istnieje.")
+        return redirect('dashboard')
+
+    user_node = UserNode.nodes.get(username=request.user.username)
+    is_leader = (group.leader.single() == user_node)
+    if not is_leader:
+        messages.error(request, "Nie masz uprawnień do dodawania zadań w tej grupie.")
+        return redirect('group_detail', uid=uid)
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        assigned_user = request.POST.get('assigned_user')
+        status = request.POST.get('status')
+        priority = request.POST.get('priority')
+        description = request.POST.get('description')
+
+        # Tworzymy obiekt Task w Neo4j
+        new_task = Task(title=title, status=status).save()
+        # Ewentualnie new_task.description = description / new_task.priority = priority
+
+        # Przypisanie do usera
+        try:
+            user_for_task = UserNode.nodes.get(username=assigned_user)
+            new_task.assigned_to.connect(user_for_task)
+        except UserNode.DoesNotExist:
+            messages.warning(request, f"Nie znaleziono użytkownika: {assigned_user}")
+
+        # Dodaj zadanie do grupy
+        group.tasks.connect(new_task)
+
+        messages.success(request, f"Zadanie '{title}' zostało dodane.")
+        return redirect('group_detail', uid=uid)
+    else:
+        return redirect('group_detail', uid=uid)

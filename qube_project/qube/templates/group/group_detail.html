@@ -4,33 +4,45 @@
 
 {% block content %}
 <div class="group-detail-container">
-  
-  <!-- LEWA KOLUMNA – Zadania (filtry, priorytety, etc.) -->
+
+  <!-- LEWA KOLUMNA – Zadania -->
   <div class="group-detail-left">
     <h3>Zadania w grupie</h3>
     <div class="task-filters">
       <p>Filtr: [dzień / priorytet / status...]</p>
     </div>
+
     <ul class="task-list">
-      {% for task in all_tasks %}
-        <li>
-          <strong>{{ task.title }}</strong> – {{ task.status }}
-          <!-- Ewentualny priorytet / data końca -->
-          {% if is_leader %}
-            <button>Edytuj</button>
-          {% endif %}
-        </li>
-      {% empty %}
-        <li>Brak zadań w grupie.</li>
-      {% endfor %}
+      <!-- Lider widzi wszystkie zadania, członek widzi tylko swoje -->
+      {% if is_leader %}
+        {% for task in all_tasks %}
+          <li>
+            <strong>{{ task.title }}</strong> – {{ task.status }}
+            <!-- Link-ikona (ołówek) do edycji zadania -->
+            <a href="#" class="icon-link" title="Edytuj zadanie" onclick="editTask('{{ task.uid }}')">✏️</a>
+          </li>
+        {% empty %}
+          <li>Brak zadań w grupie.</li>
+        {% endfor %}
+      {% else %}
+        {% for task in user_tasks %}
+          <li>
+            <strong>{{ task.title }}</strong> – {{ task.status }}
+            <!-- Członek może np. zmienić status zadania -->
+            <a href="#" class="icon-link" title="Zmień status zadania" onclick="editTaskStatus('{{ task.uid }}')">✏️</a>
+          </li>
+        {% empty %}
+          <li>Nie masz przypisanych zadań.</li>
+        {% endfor %}
+      {% endif %}
     </ul>
 
     {% if is_leader %}
       <button class="btn add-task-btn" onclick="openAddTaskModal()">Dodaj zadanie</button>
     {% endif %}
   </div>
-  
-  <!-- ŚRODKOWA KOLUMNA – Lista członków + przypisane do nich zadania -->
+
+  <!-- ŚRODKOWA KOLUMNA – Lista członków i przypisane do nich zadania -->
   <div class="group-detail-middle">
     <h3>Lista członków i ich zadania</h3>
     <ul class="member-tasks-list">
@@ -52,17 +64,22 @@
       {% endfor %}
     </ul>
   </div>
-  
-  <!-- PRAWA KOLUMNA – Lista członków z możliwością dodania/edycji (tylko lider) -->
+
+  <!-- PRAWA KOLUMNA – Członkowie grupy (z rolami) -->
   <div class="group-detail-right">
     <h3>Członkowie grupy</h3>
     <ul class="member-list">
       {% for member in group_members %}
         <li>
-          {{ member.username }}
+          <!-- username -->
+          <span>{{ member.username }}</span>
+          <!-- rola (jeśli jest w member_roles) -->
+          {% if member.username in member_roles %}
+            &emsp; {{ member_roles|dict_key:member.username }} &emsp;
+          {% endif %}
+          <!-- Ikonka do edycji członka -->
           {% if is_leader %}
-            <!-- Modyfikacja roli/usunięcie? -->
-            <button onclick="editMember('{{ member.username }}')">Modyfikuj</button>
+            <a href="#" class="icon-link" title="Modyfikuj członka" onclick="editMember('{{ member.username }}')">✏️</a>
           {% endif %}
         </li>
       {% endfor %}
@@ -75,28 +92,29 @@
 </div>
 
 <!-- Modal dodawania zadania -->
-<div id="addTaskModal" class="modal" style="display: none;">
-  <div class="modal-content">
+<div id="addTaskModal" class="modal">
+  <div class="modal-content form-container"> 
     <h4>Dodaj zadanie</h4>
     <form method="POST" action="{% url 'add_task' group.uid %}">
       {% csrf_token %}
-      <label>Nazwa zadania</label>
-      <input type="text" name="title">
       
+      <label>Nazwa zadania</label>
+      <input type="text" name="title" required>
+
       <label>Komu przydzielasz?</label>
       <select name="assigned_user">
         {% for member in group_members %}
           <option value="{{ member.username }}">{{ member.username }}</option>
         {% endfor %}
       </select>
-      
+
       <label>Status</label>
       <select name="status">
         <option value="pending">pending</option>
         <option value="in-progress">in-progress</option>
         <option value="done">done</option>
       </select>
-      
+
       <label>Priorytet</label>
       <select name="priority">
         <option value="low">Niski</option>
@@ -106,28 +124,40 @@
 
       <label>Opis</label>
       <textarea name="description"></textarea>
-      
-      <button type="submit">Zapisz</button>
-      <button type="button" onclick="closeAddTaskModal()">Anuluj</button>
+
+      <div class="modal-footer">
+        <button type="submit">Zapisz</button>
+        <button type="button" class="cancel-btn" onclick="closeAddTaskModal()">Anuluj</button>
+      </div>
     </form>
   </div>
 </div>
 
 <!-- Modal dodawania członka -->
-<div id="addMemberModal" class="modal" style="display: none;">
-  <div class="modal-content">
+<div id="addMemberModal" class="modal">
+  <div class="modal-content form-container">
     <h4>Dodaj członka</h4>
     <form method="POST" action="{% url 'add_member' group.uid %}">
       {% csrf_token %}
-      <label>Username</label>
-      <input type="text" name="new_member_username">
-      
+
+      <label>Wybierz użytkownika</label>
+      <select name="new_member_username">
+        {% for user in available_users %}
+          <option value="{{ user.username }}">{{ user.username }}</option>
+        {% endfor %}
+      </select>
+
       <label>Rola</label>
       <input type="text" name="new_member_role">
-      
-      <button type="submit">Dodaj</button>
-      <button type="button" onclick="closeAddMemberModal()">Anuluj</button>
+
+      <div class="modal-footer">
+        <button type="submit">Dodaj</button>
+        <button type="button" class="cancel-btn" onclick="closeAddMemberModal()">Anuluj</button>
+      </div>
     </form>
   </div>
 </div>
+
+<!-- Wczytanie skryptu JS na końcu, aby elementy HTML były już załadowane -->
+<script src="{% static 'js/script.js' %}"></script>
 {% endblock %}
