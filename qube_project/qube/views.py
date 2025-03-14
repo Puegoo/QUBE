@@ -7,15 +7,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 
-# Neo4j / neomodel importy
+# Importy z Twoich modeli i formularzy (Neo4j)
 from .models import Group, Task, UserNode, MemberRel
-from .forms import GroupForm, UserUpdateForm
-
+from .forms import GroupForm, UserUpdateForm, CreateGroupForm
 
 def main_view(request):
-    """Widok strony głównej."""
     return render(request, 'main.html')
-
 
 # ========== REJESTRACJA ==========
 def register_view(request):
@@ -23,7 +20,7 @@ def register_view(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Tworzymy odpowiednika w Neo4j
+            # Tworzymy UserNode w Neo4j
             UserNode(username=user.username, email=user.email).save()
             auth_login(request, user)
             messages.success(request, "Rejestracja zakończona sukcesem!")
@@ -33,7 +30,6 @@ def register_view(request):
     else:
         form = UserCreationForm()
     return render(request, 'auth/register.html', {'form': form})
-
 
 # ========== LOGOWANIE & WYLOGOWANIE ==========
 def login_view(request):
@@ -50,19 +46,18 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'auth/login.html', {'form': form})
 
-
 def logout_view(request):
     auth_logout(request)
     messages.info(request, "Wylogowano.")
     return redirect('home')
 
-
 # ========== DASHBOARD (Neo4j) ==========
 @login_required
 def dashboard_view(request):
+    """Widok głównego panelu (Dashboard)."""
     user_node = UserNode.nodes.get(username=request.user.username)
 
-    # Grupy, w których user_node jest członkiem
+    # Grupy, w których user jest członkiem
     user_groups = []
     for g in Group.nodes:
         if user_node in g.members.all():
@@ -74,7 +69,7 @@ def dashboard_view(request):
         if g.leader.single() == user_node:
             user_created_groups.append(g)
 
-    # Zadania przypisane do użytkownika
+    # Zadania przypisane do usera
     user_tasks = []
     for t in Task.nodes:
         if user_node in t.assigned_to.all():
@@ -87,10 +82,7 @@ def dashboard_view(request):
     }
     return render(request, 'dashboard/dashboard.html', context)
 
-
 # ========== TWORZENIE GRUPY (Neo4j) ==========
-from .forms import CreateGroupForm  # jeżeli masz taką formę
-
 @login_required
 def create_group_view(request):
     if request.method == "POST":
@@ -98,15 +90,18 @@ def create_group_view(request):
         description = request.POST.get("group_description", "")
         user = UserNode.nodes.get(username=request.user.username)
 
+        # Tworzymy obiekt Group w Neo4j
         group = Group(name=name).save()
         group.leader.connect(user)  # lider to aktualny user
+        # ewentualne zapisy opisu "description" – w modelu
 
-        # Dodajemy członków (np. z listy "members")
-        members = request.POST.getlist("members")  # [username1, username2...]
+        # Dodajemy członków z listy "members"
+        members = request.POST.getlist("members")  # <input name="members" multiple ...>
         for username in members:
             try:
                 member_node = UserNode.nodes.get(username=username)
                 group.members.connect(member_node)
+                # rola:
                 role_key = f"role_{username}"
                 role = request.POST.get(role_key, "")
                 if role:
@@ -119,12 +114,10 @@ def create_group_view(request):
         messages.success(request, "Grupa została utworzona!")
         return redirect('dashboard')
 
-    # GET
     all_users = UserNode.nodes.all()
     return render(request, 'dashboard/create_group.html', {'all_users': all_users})
 
-
-# ========== USTAWIENIA UŻYTKOWNIKA ==========
+# ========== USTAWIENIA UŻYTKOWNIKA (zmiana danych i hasła) ==========
 @login_required
 def settings_view(request):
     if request.method == "POST":
@@ -148,19 +141,21 @@ def settings_view(request):
         user_form = UserUpdateForm(instance=request.user)
         password_form = PasswordChangeForm(request.user)
 
-    return render(request, 'dashboard/settings.html', {'user_form': user_form, 'password_form': password_form})
-
+    return render(request, 'dashboard/settings.html', {
+        'user_form': user_form,
+        'password_form': password_form
+    })
 
 # ========== GRUPA - STRONA SZCZEGÓŁOWA ==========
+
 @login_required
 def group_view(request):
-    """Poglądowy widok grupy (nieużywany?), do usunięcia lub dostosowania."""
+    """Jeśli nie używasz tego widoku, możesz go usunąć."""
     return render(request, 'group/group.html')
-
 
 @login_required
 def group_detail_view(request, uid):
-    """Widok szczegółów grupy."""
+    """Widok szczegółowy grupy: zadania, członkowie, role, itp."""
     try:
         group = Group.nodes.get(uid=uid)
     except Group.DoesNotExist:
@@ -170,16 +165,17 @@ def group_detail_view(request, uid):
     user_node = UserNode.nodes.get(username=request.user.username)
     is_leader = (group.leader.single() == user_node)
 
-    # Członkowie i zadania
-    group_members = group.members.all()  # Neo4j set
-    all_tasks = group.tasks.all()        # zadania w grupie
+    # Członkowie grupy
+    group_members = group.members.all()
+    # Zadania w grupie
+    all_tasks = group.tasks.all()
 
-    # Dostępni użytkownicy do dodania (tacy, którzy nie są w members)
+    # Lista użytkowników spoza grupy (do <select> przy dodawaniu członka)
     all_users = UserNode.nodes.all()
     available_users = [u for u in all_users if u not in group_members]
 
-    # --- Budowa 'user_tasks' (dla wyświetlania w lewej kolumnie) ---
-    # Jeżeli lider => user_tasks = all_tasks, wpp. user_tasks = zadania przypisane do user_node
+    # ============== user_tasks (lewa kolumna) =============
+    # jeśli lider => widzi all_tasks, wpp. tylko swoje
     if is_leader:
         user_tasks = all_tasks
     else:
@@ -188,22 +184,23 @@ def group_detail_view(request, uid):
             if user_node in t.assigned_to.all():
                 user_tasks.append(t)
 
-    # --- Budowa member_tasks do środkowej kolumny ---
-    # Słownik: {username: [lista_zadan]}
+    # ============== member_tasks (środkowa kolumna) =============
+    # Słownik: { username: [zadania przypisane] }
     member_tasks = {}
     for m in group_members:
         member_tasks[m.username] = []
 
     for t in all_tasks:
-        for assigned_u in t.assigned_to.all():
-            if assigned_u in group_members:
-                member_tasks[assigned_u.username].append(t)
+        assigned_list = t.assigned_to.all()
+        for assigned_user in assigned_list:
+            if assigned_user in group_members:
+                member_tasks[assigned_user.username].append(t)
 
-    # --- Budowa member_roles do prawej kolumny ---
-    # Słownik: {username: rola}
+    # ============== member_roles (prawa kolumna) =============
+    # Słownik: { username: rola }
     member_roles = {}
     for m in group_members:
-        rel = group.members.relationship(m)  # rel -> MemberRel
+        rel = group.members.relationship(m)
         if rel and rel.role:
             member_roles[m.username] = rel.role
         else:
@@ -212,15 +209,14 @@ def group_detail_view(request, uid):
     context = {
         'group': group,
         'group_members': group_members,
-        'all_tasks': all_tasks,
-        'user_tasks': user_tasks,
-        'member_tasks': member_tasks,
-        'member_roles': member_roles,
+        'all_tasks': all_tasks,      # pełna lista zadań
+        'user_tasks': user_tasks,    # zadania dla lewego panelu
+        'member_tasks': member_tasks,# zadania dla kolumny środkowej
+        'member_roles': member_roles,# role do prawej kolumny
         'is_leader': is_leader,
         'available_users': available_users,
     }
     return render(request, 'group/group_detail.html', context)
-
 
 @login_required
 def add_member_view(request, uid):
@@ -238,7 +234,7 @@ def add_member_view(request, uid):
 
     if request.method == 'POST':
         new_member_username = request.POST.get('new_member_username')
-        new_member_role = request.POST.get('new_member_role')
+        new_member_role = request.POST.get('new_member_role', "")
 
         try:
             new_member_node = UserNode.nodes.get(username=new_member_username)
@@ -246,10 +242,7 @@ def add_member_view(request, uid):
             messages.error(request, f"Użytkownik '{new_member_username}' nie istnieje.")
             return redirect('group_detail', uid=uid)
 
-        # Dodajemy usera do members
         group.members.connect(new_member_node)
-
-        # Ustawiamy rolę w relacji
         if new_member_role:
             rel = group.members.relationship(new_member_node)
             rel.role = new_member_role
@@ -282,18 +275,15 @@ def add_task_view(request, uid):
         priority = request.POST.get('priority')
         description = request.POST.get('description')
 
-        # Tworzymy obiekt Task w Neo4j
         new_task = Task(title=title, status=status).save()
-        # Ewentualnie new_task.description = description / new_task.priority = priority
+        # ewentualnie new_task.description = description, new_task.priority = priority
 
-        # Przypisanie do usera
         try:
             user_for_task = UserNode.nodes.get(username=assigned_user)
             new_task.assigned_to.connect(user_for_task)
         except UserNode.DoesNotExist:
             messages.warning(request, f"Nie znaleziono użytkownika: {assigned_user}")
 
-        # Dodaj zadanie do grupy
         group.tasks.connect(new_task)
 
         messages.success(request, f"Zadanie '{title}' zostało dodane.")

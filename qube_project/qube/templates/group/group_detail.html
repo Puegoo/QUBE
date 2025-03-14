@@ -7,7 +7,11 @@
 
   <!-- LEWA KOLUMNA – Zadania -->
   <div class="group-detail-left">
-    <h3>Zadania w grupie</h3>
+    {% if is_leader %}
+      <h3>Zadania w grupie</h3>
+    {% else %}
+      <h3>Twoje zadania</h3>
+    {% endif %}
     <div class="task-filters">
       <p>Filtr: [dzień / priorytet / status...]</p>
     </div>
@@ -71,14 +75,13 @@
     <ul class="member-list">
       {% for member in group_members %}
         <li>
-          <!-- username -->
           <span>{{ member.username }}</span>
-          <!-- rola (jeśli jest w member_roles) -->
           {% if member.username in member_roles %}
+            <!-- Wyświetlanie roli -->
             &emsp; {{ member_roles|dict_key:member.username }} &emsp;
           {% endif %}
-          <!-- Ikonka do edycji członka -->
           {% if is_leader %}
+            <!-- Ikonka do edycji członka -->
             <a href="#" class="icon-link" title="Modyfikuj członka" onclick="editMember('{{ member.username }}')">✏️</a>
           {% endif %}
         </li>
