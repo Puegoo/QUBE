@@ -1,108 +1,108 @@
 /**
  * Dodaje użytkownika o podanym username do listy członków,
- * usuwając go jednocześnie z listy użytkowników (po prawej).
+ * usuwając go jednocześnie z listy "wszystkich użytkowników".
  */
 function addMember(username) {
-    // Szukamy elementu w liście po prawej (id="user_username")
-    const userItem = document.getElementById(`user_${username}`);
-    if (!userItem) return;
-  
-    // Usuwamy z listy "wszystkich użytkowników"
-    userItem.remove();
-  
-    // Tworzymy nowy <li> w liście członków (id="memberList")
-    const li = document.createElement('li');
-    li.className = 'member-item';
-    li.dataset.username = username;
-  
-    li.innerHTML = `
-      <span>${username}</span>
-      <span class="member-role">
-        &nbsp;
-        <input
-          type="text"
-          name="role_${username}"
-          class="role-input"
-          placeholder="Dowolna rola..."
-        >
-      </span>
-      <button
-        type="button"
-        class="square-btn remove-btn"
-        onclick="removeMember('${username}')"
+  const userItem = document.getElementById(`user_${username}`);
+  if (!userItem) return;
+
+  userItem.remove(); // usunięcie z listy po prawej
+
+  const li = document.createElement('li');
+  li.className = 'member-item';
+  li.dataset.username = username;
+  li.innerHTML = `
+    <span>${username}</span>
+    <span class="member-role">
+      &nbsp;
+      <input
+        type="text"
+        name="role_${username}"
+        class="role-input"
+        placeholder="Dowolna rola..."
       >
-        -
-      </button>
-      <input type="hidden" name="members" value="${username}">
-    `;
-  
-    // Dodajemy nowy element do listy członków
-    const memberList = document.getElementById('memberList');
-    if (memberList) {
-      memberList.appendChild(li);
-    }
+    </span>
+    <button
+      type="button"
+      class="square-btn remove-btn"
+      onclick="removeMember('${username}')"
+    >
+      -
+    </button>
+    <input type="hidden" name="members" value="${username}">
+  `;
+
+  const memberList = document.getElementById('memberList');
+  if (memberList) {
+    memberList.appendChild(li);
   }
-  
-  /**
-   * Usuwa użytkownika o podanym username z listy członków
-   * i przywraca go do listy "wszystkich użytkowników".
-   */
-  function removeMember(username) {
-    // Szukamy <li> w liście członków po atrybucie data-username
-    const memberItem = document.querySelector(`.member-item[data-username='${username}']`);
-    if (!memberItem) return;
-  
-    // Usuwamy z listy członków
-    memberItem.remove();
-  
-    // Odzyskujemy element <li> w liście "wszystkich użytkowników"
-    const li = document.createElement('li');
-    li.className = 'user-item';
-    li.id = `user_${username}`;
-  
-    li.innerHTML = `
-      <span>${username}</span>
-      <button
-        type="button"
-        class="square-btn add-btn"
-        onclick="addMember('${username}')"
-      >
-        +
-      </button>
-    `;
-  
-    // Dodajemy do listy użytkowników (id="allUsersList")
-    const allUsersList = document.getElementById('allUsersList');
-    if (allUsersList) {
-      allUsersList.appendChild(li);
-    }
+}
+
+/**
+ * Usuwa użytkownika z listy członków i przywraca do "wszystkich użytkowników".
+ */
+function removeMember(username) {
+  const memberItem = document.querySelector(`.member-item[data-username='${username}']`);
+  if (!memberItem) return;
+
+  memberItem.remove(); // usuń z listy członków
+
+  const li = document.createElement('li');
+  li.className = 'user-item';
+  li.id = `user_${username}`;
+  li.innerHTML = `
+    <span>${username}</span>
+    <button
+      type="button"
+      class="square-btn add-btn"
+      onclick="addMember('${username}')"
+    >
+      +
+    </button>
+  `;
+
+  const allUsersList = document.getElementById('allUsersList');
+  if (allUsersList) {
+    allUsersList.appendChild(li);
   }
-  
-  function openAddMemberModal() {
-    const modal = document.getElementById('addMemberModal');
-    if (modal) {
-        modal.style.display = 'flex'  // pokaż modal
-    }
+}
+
+/* Obsługa modali (dodawanie członka, dodawanie zadania) */
+function openAddMemberModal() {
+  const modal = document.getElementById('addMemberModal');
+  if (modal) {
+    modal.style.display = 'flex';
   }
-  
-  function closeAddMemberModal() {
-    const modal = document.getElementById('addMemberModal');
-    if (modal) {
-      modal.style.display = 'none';   // schowaj modal
-    }
+}
+
+function closeAddMemberModal() {
+  const modal = document.getElementById('addMemberModal');
+  if (modal) {
+    modal.style.display = 'none';
   }
-  
-  function openAddTaskModal() {
-    const modal = document.getElementById('addTaskModal');
-    if (modal) {
-      modal.style.display = 'flex';
-    }
+}
+
+function openAddTaskModal() {
+  const modal = document.getElementById('addTaskModal');
+  if (modal) {
+    modal.style.display = 'flex';
   }
-  
-  function closeAddTaskModal() {
-    const modal = document.getElementById('addTaskModal');
-    if (modal) {
-      modal.style.display = 'none';
-    }
+}
+
+function closeAddTaskModal() {
+  const modal = document.getElementById('addTaskModal');
+  if (modal) {
+    modal.style.display = 'none';
   }
-  
+}
+
+/* Ewentualne funkcje editTask(uid) / editTaskStatus(uid) / editMember(username) */
+function editTask(uid) {
+  alert(`Tu logika edycji zadania o uid=${uid}`);
+}
+function editTaskStatus(uid) {
+  alert(`Tu logika zmiany statusu zadania o uid=${uid}`);
+}
+function editMember(username) {
+  alert(`Tu logika edycji członka: ${username}`);
+}

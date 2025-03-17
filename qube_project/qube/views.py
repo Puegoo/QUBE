@@ -7,9 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 
-# Importy z Twoich modeli i formularzy (Neo4j)
 from .models import Group, Task, UserNode, MemberRel
 from .forms import GroupForm, UserUpdateForm, CreateGroupForm
+
+from datetime import date, datetime
 
 def main_view(request):
     return render(request, 'main.html')
@@ -20,13 +21,13 @@ def register_view(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Tworzymy UserNode w Neo4j
+            # Tworzymy węzeł Neo4j
             UserNode(username=user.username, email=user.email).save()
             auth_login(request, user)
             messages.success(request, "Rejestracja zakończona sukcesem!")
             return redirect('dashboard')
         else:
-            messages.error(request, "Wystąpił błąd w trakcie rejestracji.")
+            messages.error(request, "Błąd w trakcie rejestracji.")
     else:
         form = UserCreationForm()
     return render(request, 'auth/register.html', {'form': form})
@@ -54,23 +55,22 @@ def logout_view(request):
 # ========== DASHBOARD (Neo4j) ==========
 @login_required
 def dashboard_view(request):
-    """Widok głównego panelu (Dashboard)."""
     user_node = UserNode.nodes.get(username=request.user.username)
+    user_groups = []
+    user_created_groups = []
+    user_tasks = []
 
     # Grupy, w których user jest członkiem
-    user_groups = []
     for g in Group.nodes:
         if user_node in g.members.all():
             user_groups.append(g)
 
     # Grupy, w których jest liderem
-    user_created_groups = []
     for g in Group.nodes:
         if g.leader.single() == user_node:
             user_created_groups.append(g)
 
     # Zadania przypisane do usera
-    user_tasks = []
     for t in Task.nodes:
         if user_node in t.assigned_to.all():
             user_tasks.append(t)
@@ -90,18 +90,14 @@ def create_group_view(request):
         description = request.POST.get("group_description", "")
         user = UserNode.nodes.get(username=request.user.username)
 
-        # Tworzymy obiekt Group w Neo4j
         group = Group(name=name).save()
-        group.leader.connect(user)  # lider to aktualny user
-        # ewentualne zapisy opisu "description" – w modelu
+        group.leader.connect(user)
 
-        # Dodajemy członków z listy "members"
-        members = request.POST.getlist("members")  # <input name="members" multiple ...>
+        members = request.POST.getlist("members")
         for username in members:
             try:
                 member_node = UserNode.nodes.get(username=username)
                 group.members.connect(member_node)
-                # rola:
                 role_key = f"role_{username}"
                 role = request.POST.get(role_key, "")
                 if role:
@@ -135,7 +131,7 @@ def settings_view(request):
             messages.success(request, "Hasło zostało zmienione.")
             return redirect('dashboard')
 
-        messages.error(request, "Wystąpił błąd podczas aktualizacji ustawień.")
+        messages.error(request, "Błąd w trakcie aktualizacji ustawień.")
 
     else:
         user_form = UserUpdateForm(instance=request.user)
@@ -155,7 +151,6 @@ def group_view(request):
 
 @login_required
 def group_detail_view(request, uid):
-    """Widok szczegółowy grupy: zadania, członkowie, role, itp."""
     try:
         group = Group.nodes.get(uid=uid)
     except Group.DoesNotExist:
@@ -165,56 +160,71 @@ def group_detail_view(request, uid):
     user_node = UserNode.nodes.get(username=request.user.username)
     is_leader = (group.leader.single() == user_node)
 
-    # Członkowie grupy
     group_members = group.members.all()
-    # Zadania w grupie
     all_tasks = group.tasks.all()
 
-    # Lista użytkowników spoza grupy (do <select> przy dodawaniu członka)
-    all_users = UserNode.nodes.all()
-    available_users = [u for u in all_users if u not in group_members]
+    # Pobierz kryteria filtrowania z GET (np. status, priorytet, data)
+    status_filter = request.GET.get('status')
+    priority_filter = request.GET.get('priority')
+    due_date_filter = request.GET.get('due_date')  # np. "2025-03-20"
 
-    # ============== user_tasks (lewa kolumna) =============
-    # jeśli lider => widzi all_tasks, wpp. tylko swoje
-    if is_leader:
-        user_tasks = all_tasks
-    else:
-        user_tasks = []
-        for t in all_tasks:
+    # Przefiltruj zadania
+    filtered_tasks = []
+    for task in all_tasks:
+        if status_filter and task.status != status_filter:
+            continue
+        if priority_filter and task.priority != priority_filter:
+            continue
+        if due_date_filter:
+            try:
+                # Zamień podaną datę na obiekt date
+                from datetime import datetime
+                due_date_crit = datetime.strptime(due_date_filter, "%Y-%m-%d").date()
+                if task.due_date and task.due_date != due_date_crit:
+                    continue
+            except ValueError:
+                pass
+        filtered_tasks.append(task)
+
+    # Dla członków – filtrowanie tylko ich zadań (jeśli nie lider)
+    user_tasks = []
+    if not is_leader:
+        for t in filtered_tasks:
             if user_node in t.assigned_to.all():
                 user_tasks.append(t)
 
-    # ============== member_tasks (środkowa kolumna) =============
-    # Słownik: { username: [zadania przypisane] }
+    # Buduj mapę zadań przypisanych do poszczególnych członków
     member_tasks = {}
-    for m in group_members:
-        member_tasks[m.username] = []
+    for member in group_members:
+        member_tasks[member.username] = []
+        for t in filtered_tasks:
+            if member in t.assigned_to.all():
+                member_tasks[member.username].append(t)
 
-    for t in all_tasks:
-        assigned_list = t.assigned_to.all()
-        for assigned_user in assigned_list:
-            if assigned_user in group_members:
-                member_tasks[assigned_user.username].append(t)
+    # Lista użytkowników, którzy nie są członkami (do dodawania)
+    all_users = UserNode.nodes.all()
+    available_users = [u for u in all_users if u not in group_members]
 
-    # ============== member_roles (prawa kolumna) =============
-    # Słownik: { username: rola }
+    # Role członków
     member_roles = {}
-    for m in group_members:
-        rel = group.members.relationship(m)
+    for member in group_members:
+        rel = group.members.relationship(member)
         if rel and rel.role:
-            member_roles[m.username] = rel.role
-        else:
-            member_roles[m.username] = ""
+            member_roles[member.username] = rel.role
 
     context = {
         'group': group,
         'group_members': group_members,
-        'all_tasks': all_tasks,      # pełna lista zadań
-        'user_tasks': user_tasks,    # zadania dla lewego panelu
-        'member_tasks': member_tasks,# zadania dla kolumny środkowej
-        'member_roles': member_roles,# role do prawej kolumny
+        'all_tasks': filtered_tasks,
+        'user_tasks': user_tasks,
+        'member_tasks': member_tasks,
+        'member_roles': member_roles,
         'is_leader': is_leader,
         'available_users': available_users,
+        # przekazujemy też aktualne filtry, żeby formularz mógł je wyświetlać
+        'status_filter': status_filter,
+        'priority_filter': priority_filter,
+        'due_date_filter': due_date_filter,
     }
     return render(request, 'group/group_detail.html', context)
 
@@ -227,9 +237,8 @@ def add_member_view(request, uid):
         return redirect('dashboard')
 
     user_node = UserNode.nodes.get(username=request.user.username)
-    is_leader = (group.leader.single() == user_node)
-    if not is_leader:
-        messages.error(request, "Nie masz uprawnień do dodawania członków w tej grupie.")
+    if group.leader.single() != user_node:
+        messages.error(request, "Brak uprawnień do dodawania członków.")
         return redirect('group_detail', uid=uid)
 
     if request.method == 'POST':
@@ -251,7 +260,6 @@ def add_member_view(request, uid):
         messages.success(request, f"Dodano użytkownika '{new_member_username}' z rolą '{new_member_role}'.")
         return redirect('group_detail', uid=uid)
     else:
-        # GET
         return redirect('group_detail', uid=uid)
 
 @login_required
@@ -263,9 +271,8 @@ def add_task_view(request, uid):
         return redirect('dashboard')
 
     user_node = UserNode.nodes.get(username=request.user.username)
-    is_leader = (group.leader.single() == user_node)
-    if not is_leader:
-        messages.error(request, "Nie masz uprawnień do dodawania zadań w tej grupie.")
+    if group.leader.single() != user_node:
+        messages.error(request, "Brak uprawnień do dodawania zadań.")
         return redirect('group_detail', uid=uid)
 
     if request.method == 'POST':
@@ -274,16 +281,33 @@ def add_task_view(request, uid):
         status = request.POST.get('status')
         priority = request.POST.get('priority')
         description = request.POST.get('description')
+        due_date_str = request.POST.get('due_date')  # data w formacie "YYYY-MM-DD"
 
-        new_task = Task(title=title, status=status).save()
-        # ewentualnie new_task.description = description, new_task.priority = priority
+        # Tworzymy i zapisujemy obiekt Task
+        new_task = Task(
+            title=title,
+            status=status,
+            priority=priority,
+            description=description
+        ).save()
 
+        # Ustawiamy due_date (jeśli podano)
+        if due_date_str:
+            from datetime import date
+            try:
+                new_task.due_date = date.fromisoformat(due_date_str)
+                new_task.save()
+            except ValueError:
+                messages.warning(request, f"Nieprawidłowy format daty: {due_date_str}")
+
+        # Łączymy zadanie z userem
         try:
             user_for_task = UserNode.nodes.get(username=assigned_user)
             new_task.assigned_to.connect(user_for_task)
         except UserNode.DoesNotExist:
             messages.warning(request, f"Nie znaleziono użytkownika: {assigned_user}")
 
+        # Łączymy zadanie z grupą
         group.tasks.connect(new_task)
 
         messages.success(request, f"Zadanie '{title}' zostało dodane.")

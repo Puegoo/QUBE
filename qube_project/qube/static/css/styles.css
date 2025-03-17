@@ -20,13 +20,11 @@ body {
   align-items: center;
 }
 
-/* Lewa część nawigacji (tytuł) */
 .nav-left {
   display: flex;
   align-items: center;
 }
 
-/* Napis "QUBE" */
 .nav-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -35,7 +33,7 @@ body {
 }
 
 .nav-title:hover {
-  color: #8F9085; /* Efekt hover */
+  color: #8F9085;
 }
 
 /* ============ GŁÓWNA SEKCJA (MAIN) ============ */
@@ -43,10 +41,9 @@ main {
   min-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #F1F1EF 0%, #F8F9FA 70%); /* Subtelny gradient w tle */
+  background: linear-gradient(135deg, #F1F1EF 0%, #F8F9FA 70%);
 }
 
-/* Kontener na zawartość strony głównej (logo, przyciski) */
 .main-container {
   flex: 1;
   display: flex;
@@ -54,56 +51,55 @@ main {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 20px; /* Dodatkowe wypełnienie dla lepszego wyglądu */
+  padding: 20px;
 }
 
-/* Tekst powitalny */
 .welcome-text {
-  margin-bottom: 40px; /* Większy odstęp między tekstem a logiem */
+  margin-bottom: 40px;
 }
 
 .welcome-text h1 {
-  font-size: 2.5rem; /* Większy nagłówek */
+  font-size: 2.5rem;
   color: #333333;
   margin: 0;
   font-weight: 600;
 }
 
 .welcome-text p {
-  font-size: 1.2rem; /* Lekko większy podtytuł */
+  font-size: 1.2rem;
   color: #666666;
   margin: 10px 0 0;
 }
 
-/* Logo – lekka animacja wejścia */
+/* Logo */
 .logo img {
-  width: 40vb; /* Zachowano elastyczną szerokość */
+  width: 40vb;
   height: auto;
   animation: fadeIn 1s ease-in-out;
-  margin-bottom: 40px; /* Większy odstęp między logiem a przyciskami */
+  margin-bottom: 40px;
 }
 
-/* Przyciski (główne) */
+/* Przyciski główne */
 .buttons {
-  margin-top: 0; /* Usunięto domyślny margines, sterujemy odstępami ręcznie */
+  margin-top: 0;
   display: flex;
-  gap: 20px; /* Odstęp między przyciskami */
+  gap: 20px;
 }
 
 .btn {
   background-color: #8F9085;
   color: #fff;
-  padding: 14px 28px; /* Nieco większe wypełnienie dla lepszego wyglądu */
+  padding: 14px 28px;
   border-radius: 30px;
   text-decoration: none;
   transition: background-color 0.3s, transform 0.3s;
   font-weight: 600;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Delikatny cień dla głębi */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
   background-color: #6D6E65;
-  transform: translateY(-3px); /* Nieco większy efekt podnoszenia */
+  transform: translateY(-3px);
 }
 
 /* Animacje */
@@ -120,7 +116,7 @@ main {
 
 /* ============ FORMULARZE ============ */
 .form-container {
-  max-width: 500px; /* Zwiększona szerokość z 400px na 500px */
+  max-width: 500px;
   margin: 50px auto;
   padding: 30px;
   border: 1px solid #ddd;
@@ -132,14 +128,12 @@ main {
   align-items: stretch;
 }
 
-/* Nagłówek */
 .form-container h2 {
   text-align: center;
   margin-bottom: 20px;
   font-size: 1.8rem;
 }
 
-/* Formularz */
 .form-container form {
   width: 100%;
   display: flex;
@@ -147,26 +141,20 @@ main {
   align-items: stretch;
 }
 
-/* Paragrafy generowane przez {{ form.as_p }} */
 .form-container form p {
-  width: 100%;
   text-align: left;
   margin-bottom: 10px;
 }
 
-/* Etykiety */
 .form-container form label {
   display: block;
-  width: 100%;
   text-align: left;
   font-weight: 600;
   margin-bottom: 5px;
   font-size: 14px;
 }
 
-/* Pola formularza */
 .form-container form input,
-.form-container form select,
 .form-container form textarea {
   width: 100%;
   padding: 12px;
@@ -177,6 +165,36 @@ main {
   box-sizing: border-box;
 }
 
+/* Stylizacja select */
+form select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: 'Montserrat', sans-serif;
+  color: #333;
+  background-color: #fff;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg fill='%23333' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5H7z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px 18px;
+  cursor: pointer;
+}
+
+form select:hover {
+  border-color: #999;
+}
+
+form select:focus {
+  border-color: #6D6E65;
+}
+
 /* Opisy pól */
 .form-container form .helptext {
   font-size: 12px;
@@ -184,23 +202,21 @@ main {
   font-style: italic;
   margin-bottom: 10px;
   text-align: left;
-  width: 100%;
 }
 
 /* Komunikaty błędów */
 .form-container .errorlist {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
   color: red;
   font-size: 14px;
   margin-bottom: 10px;
   text-align: left;
-  width: 100%;
 }
 
-/* Przycisk */
+/* Przycisk w formularzu */
 .form-container form .btn {
-  width: 250px; /* Zwiększona szerokość z 200px na 250px */
+  width: 250px;
   padding: 12px;
   background-color: #8F9085;
   border: none;
@@ -219,7 +235,7 @@ main {
   transform: translateY(-2px);
 }
 
-/* Link do logowania/rejestracji */
+/* ============ REJESTRACJA/LOGOWANIE LINKI ============ */
 .register-link, .login-link {
   margin-top: 30px;
   font-size: 14px;
@@ -249,7 +265,7 @@ main {
   background: #fff;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .dashboard-sidebar h2 {
@@ -279,13 +295,11 @@ main {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Efekt podniesienia przy najechaniu */
 .group-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Link do grupy */
 .group-link {
   text-decoration: none;
   color: #333;
@@ -293,7 +307,6 @@ main {
   font-size: 1rem;
 }
 
-/* Korona dla lidera grupy */
 .leader-crown {
   font-size: 1.3rem;
   color: gold;
@@ -302,7 +315,6 @@ main {
   top: 8px;
 }
 
-/* Pusta sekcja */
 .empty-text {
   color: #777;
   font-style: italic;
@@ -316,7 +328,7 @@ main {
   background: #fff;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .dashboard-main h2 {
@@ -354,7 +366,7 @@ main {
   margin-left: auto;
 }
 
-.nav-link logout {
+.nav-link.logout {
   color: red;
 }
 
@@ -365,59 +377,8 @@ main {
   font-weight: 600;
 }
 
-
 .nav-link:hover {
   color: #8F9085;
-}
-
-.form-container {
-  max-width: 500px;
-  margin: 50px auto;
-  padding: 30px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.form-container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.8rem;
-}
-
-.form-container form {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-container form input,
-.form-container form textarea {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-.form-container form .btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #8F9085;
-  border: none;
-  border-radius: 30px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-}
-
-.form-container form .btn:hover {
-  background-color: #6D6E65;
-  transform: translateY(-2px);
 }
 
 /* ============ CREATE GROUP VIEW ============ */
@@ -448,7 +409,6 @@ main {
   margin-bottom: 15px;
 }
 
-/* Formularz tworzenia grupy */
 #createGroupForm label {
   display: block;
   margin-top: 10px;
@@ -464,14 +424,14 @@ main {
   border-radius: 6px;
   padding: 12px;
   font-size: 16px;
-  box-sizing: border-box;
+  box-sizing: border-box;  
 }
 
 /* Lista członków (lewa strona) */
 .member-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px 0; /* margines 20px na dole przed przyciskiem */
+  margin: 0 0 20px 0;
 }
 
 .member-item {
@@ -486,6 +446,8 @@ main {
 
 .member-item span {
   margin-right: 10px;
+  margin-left: 20px;
+  font-size: large;
 }
 
 .member-item input.role-input {
@@ -503,19 +465,19 @@ main {
 
 .user-item {
   display: flex;
-  justify-content: space-between;
+  align-items: center;        /* Wyrównanie w pionie na środek */
+  justify-content: space-between; /* Rozkłada tekst i przycisk na boki */
   background: #f9f9f9;
   padding: 6px;
   border-radius: 4px;
   margin-bottom: 8px;
 }
 
-/* Kwadratowe przyciski */
 .square-btn {
-  width: 40px;        /* kwadrat 40x40 */
+  width: 40px;
   height: 40px;
-  border-radius: 4px; /* lekko zaokrąglone rogi */
-  font-size: 1.3rem;  /* większy tekst + / - */
+  border-radius: 4px;
+  font-size: 1.3rem;
   font-weight: 600;
   border: none;
   color: #fff;
@@ -524,55 +486,35 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* Możesz usunąć margin-right lub zamienić go na margin-left, 
+     jeśli chcesz zostawić odstęp od krawędzi. */
+  margin-right: 0;
 }
 
-/* Zielony plus */
 .add-btn {
-  background-color: #3A7D3A; /* ciemniejszy zielony */
+  background-color: #a9d9a0;
 }
+
 .add-btn:hover {
-  background-color: #2f6b2f;
+  background-color: #3eab38;
   transform: scale(1.05);
 }
 
-/* Czerwony minus */
 .remove-btn {
-  background-color: #a83232; /* ciemniejszy czerwony */
+  background-color: #f2b6b6;
+  margin-right: 20px;
 }
 .remove-btn:hover {
-  background-color: #8f2a2a;
+  background-color: #ab3838;
   transform: scale(1.05);
 }
 
-/* Przycisk "Utwórz grupę" – węższy */
 .group-submit-btn {
-  margin-top: 20px;  /* większy odstęp od listy członków */
-  width: auto;       /* auto-szerokość */
+  margin-top: 20px;
+  width: auto;
   padding: 10px 20px;
   display: inline-block;
   font-size: 16px;
-}
-
-
-/* ============ STOPKA ============ */
-footer {
-  text-align: center;
-  padding: 10px;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
-  color: #333;
-}
-
-/* ============ ANIMACJE ============ */
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 /* ============ GROUP DETAIL VIEW ============ */
@@ -582,23 +524,30 @@ footer {
   padding: 20px;
 }
 
-/* Lewa, środkowa, prawa kolumna */
+/* Set left and right panels to be flex containers so buttons can be pushed down */
 .group-detail-left,
-.group-detail-middle,
 .group-detail-right {
+  display: flex;
+  flex-direction: column;
   background: #fff;
-  padding: 20px;
+  padding: 5px 20px 20px 20px;
   border-radius: 8px;
   flex: 1;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.group-detail-left {
-  flex: 1.2; /* trochę większe miejsce */
-}
-
+/* Middle panel remains as is */
 .group-detail-middle {
-  flex: 1.5; /* środkowa ma najwięcej miejsca */
+  background: #fff;
+  padding: 5px 20px 20px 20px;
+  border-radius: 8px;
+  flex: 1.5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Adjust individual panel flex values */
+.group-detail-left {
+  flex: 1.2;
 }
 
 .group-detail-right {
@@ -613,12 +562,10 @@ footer {
   padding-bottom: 5px;
 }
 
-/* Filtry zadań, itp. */
 .task-filters {
   margin-bottom: 10px;
 }
 
-/* Listy */
 .task-list,
 .member-tasks-list,
 .member-list {
@@ -627,35 +574,77 @@ footer {
   margin: 0;
 }
 
-.task-list li,
-.member-tasks-list li,
-.member-list li {
-  padding: 8px 0;
-  border-bottom: 1px solid #ddd;
+.group-detail-left li {
+  padding: 0px 0;
 }
+
+.group-detail-middle li {
+  padding: 8px 0;
+}
+
 
 .task-list li strong,
 .member-tasks-list li strong {
   font-weight: 600;
 }
 
-/* Przykładowe przyciski w widoku */
+/* Ensure the list (or other content) grows and pushes the button down */
+.task-list,
+.member-list {
+  flex: 1;
+}
+
+/* Update buttons so they always appear at the bottom */
 .add-task-btn,
 .add-member-btn {
-  margin-top: 15px;
-  background-color: #8F9085;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 30px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
+  align-self: flex-start;
+  font-size: 0.8rem;
+  padding: 9px 18px;
 }
 
 .add-task-btn:hover,
 .add-member-btn:hover {
   background-color: #6D6E65;
   transform: translateY(-2px);
+}
+
+/* === Kafelki członków grupy === */
+.member-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+.member-tile-left {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+  padding-left: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.member-tile-center {
+  flex: 1;
+  text-align: center;
+  font-style: italic;
+}
+
+.member-tile-right {
+  flex: 0 0 auto;
+  text-align: right;
+  padding-right: 10px;
+}
+
+/* Kafelek lidera z dodatkową złotą poświatą */
+.leader-tile {
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);  /* złoty blask */
 }
 
 /* ============ MODALE (OKIENKA) ============ */
@@ -665,86 +654,24 @@ footer {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.4); /* Półprzezroczysty cień w tle */
-  display: none;              /* Domyślnie ukryte */
-  align-items: center;        /* Wycentrowanie w pionie */
-  justify-content: center;    /* Wycentrowanie w poziomie */
-  z-index: 9999;              /* Przesuwamy nad resztę interfejsu */
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .modal-content {
-  background-color: #fff;      /* Białe tło */
-  border-radius: 8px;          /* Zaokrąglone rogi */
+  background-color: #fff;
+  border-radius: 8px;
   padding: 20px;
-  width: 400px;                /* Szerokość okienka */
-  max-width: 90vw;             /* Na mniejszych ekranach max 90% szerokości */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* Delikatny cień */
-  animation: fadeInModal 0.3s ease;      /* Animacja wejścia (poniżej) */
-  position: relative;           /* Pozycjonowanie względem .modal-content */
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  animation: fadeInModal 0.3s ease;
+  position: relative;
 }
 
-/* Nagłówek okienka */
-.modal-header {
-  font-size: 1.4rem;
-  margin-bottom: 15px;
-  color: #333;
-  font-weight: 600;
-}
-
-/* Wewnętrzna sekcja (np. formularz) */
-.modal-body {
-  margin-bottom: 20px;
-}
-
-/* Stopka okienka (np. przyciski) */
-.modal-footer {
-  text-align: right;
-}
-
-/* Przykładowy styl dla przycisków w modalu */
-.modal-content button {
-  background-color: #8F9085;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-  margin-left: 8px;
-}
-
-/* Efekt hover przycisków w modalu */
-.modal-content button:hover {
-  background-color: #6D6E65;
-  transform: translateY(-2px);
-}
-
-/* Przyciski anuluj itp. – można dodać inny kolor, np. czerwony */
-.modal-content .cancel-btn {
-  background-color: #a83232;
-}
-.modal-content .cancel-btn:hover {
-  background-color: #8f2a2a;
-}
-
-/* Ikona / przycisk do zamykania (opcjonalny) */
-.close-modal-btn {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 1.2rem;
-  position: absolute;
-  top: 10px; 
-  right: 15px;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.close-modal-btn:hover {
-  color: #333;
-}
-
-/* Efekt animacji wchodzenia okienka */
 @keyframes fadeInModal {
   0% {
     opacity: 0;
@@ -754,4 +681,136 @@ footer {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.modal-content button {
+  background-color: #8F9085;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 10px;
+}
+
+.modal-content button:hover {
+  background-color: #6D6E65;
+  transform: translateY(-2px);
+}
+
+.modal-content .cancel-btn {
+  background-color: #a83232;
+}
+.modal-content .cancel-btn:hover {
+  background-color: #8f2a2a;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.2rem;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+  color: #333;
+}
+
+/* Dodatkowe style dla większych przycisków w modalu */
+.modal-content button {
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+.modal-content .cancel-btn {
+  float: right;
+  background-color: #a83232;
+}
+.modal-content .cancel-btn:hover {
+  background-color: #8f2a2a;
+}
+
+/* Allow textarea to resize only vertically */
+.form-container form textarea {
+  resize: vertical;
+  max-height: 250px;
+}
+
+.form-container form fieldset{
+  margin-top: 20px;
+}
+
+/* === Sekcja kafelka zadań w środkowej kolumnie === */
+.task-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: 8px 0;
+  max-width: 97%;
+}
+
+/* Zmniejszamy marginesy i usuwamy dodatkowe przesunięcia, aby kafelek był lepiej wyśrodkowany */
+.task-tile-left,
+.task-tile-center,
+.task-tile-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 4px;
+}
+
+.task-tile-left {
+  justify-content: flex-start;
+  font-weight: 600;
+  word-wrap: break-word;
+  min-width: 40px;
+  width: 0;             /* żeby text-overflow działał, trzeba określić szerokość lub max-width */
+  flex: 1;              /* np. flex: 1, by rozciągnąć w dostępnym miejscu */
+  white-space: nowrap;  /* nie pozwala na przejście do nowej linii */
+  overflow: hidden;     /* chowa nadmiar tekstu */
+  text-overflow: ellipsis;
+}
+
+.task-tile-center {
+  justify-content: center;
+  font-style: italic;
+}
+
+.task-tile-right {
+  justify-content: flex-end;
+  color: #777;
+  font-style: italic;
+
+}
+
+.priority-icon {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+/* Dodatkowe ustawienia, by kafelki nie wychodziły poza środkową kolumnę */
+.member-tasks-list {
+  padding: 0;
+  margin: 0;
+}
+
+
+/* === STÓPKA === */
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #fff; border-top: 1px solid #ddd;
+  color: #333;
 }

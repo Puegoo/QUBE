@@ -5,12 +5,6 @@
 <div class="form-container">
     <h2 style="text-align:center; margin-bottom:20px;">Rejestracja</h2>
     
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-    
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
