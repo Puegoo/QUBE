@@ -1,0 +1,13 @@
+{% extends 'master.html' %}
+{% load static %}
+{% block content %}
+<div class="form-container">
+  <h2>Edycja członka: {{ member.username }}</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <label>Rola (wpisz, aby zaktualizować, lub pozostaw puste, aby usunąć członka)</label>
+    <input type="text" name="role" value="{{ current_role }}" placeholder="Wpisz rolę">
+    <button type="submit" class="btn">Zapisz</button>
+  </form>
+</div>
+{% endblock %}

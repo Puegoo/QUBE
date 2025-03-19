@@ -1,4 +1,9 @@
 {% load static %}
+
+<script>
+    var currentGroupUid = "{{ group.uid }}";
+</script>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -17,7 +22,7 @@
             <div class="nav-links">
                 <a href="{% url 'create_group' %}" class="nav-link">➕ Nowa grupa</a>
                 <a href="{% url 'settings' %}" class="nav-link">⚙️ Ustawienia</a>
-                <a href="{% url 'logout' %}" class="nav-link logout">🚪 Wyloguj</a>
+                <a href="{% url 'logout' %}" class="nav-link logout">Wyloguj</a>
             </div>
             {% else %}
             <div class="nav-links">

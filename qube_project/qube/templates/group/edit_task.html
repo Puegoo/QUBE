@@ -1,0 +1,52 @@
+{% extends 'master.html' %}
+{% load static %}
+{% block content %}
+<div class="form-container" style="max-width: 700px;">
+  <h2>Edycja zadania</h2>
+  <form method="POST">
+    {% csrf_token %}
+    
+    <label>Nazwa zadania</label>
+    <input type="text" name="title" value="{{ task.title }}" required>
+    
+    <label>Opis</label>
+    <textarea name="description">{{ task.description }}</textarea>
+    
+    <label>Priorytet</label>
+    <select name="priority">
+      <option value="low" {% if task.priority == "low" %}selected{% endif %}>Niski</option>
+      <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Średni</option>
+      <option value="high" {% if task.priority == "high" %}selected{% endif %}>Wysoki</option>
+    </select>
+    
+    <label>Status</label>
+    <select name="status">
+      <option value="pending" {% if task.status == "pending" %}selected{% endif %}>Pending</option>
+      <option value="in-progress" {% if task.status == "in-progress" %}selected{% endif %}>In Progress</option>
+      <option value="done" {% if task.status == "done" %}selected{% endif %}>Done</option>
+    </select>
+    
+    <label>Data oddania</label>
+    <input type="date" name="due_date" value="{% if task.due_date %}{{ task.due_date }}{% endif %}">
+    
+    <label>Przydziel do</label>
+    <select name="assigned_user">
+      {% if task.assigned_to.all %}
+        {% with assigned=task.assigned_to.all|first %}
+          {% for member in group_members %}
+            <option value="{{ member.username }}" {% if assigned and assigned.username == member.username %}selected{% endif %}>
+              {{ member.username }}
+            </option>
+          {% endfor %}
+        {% endwith %}
+      {% else %}
+        {% for member in group_members %}
+          <option value="{{ member.username }}">{{ member.username }}</option>
+        {% endfor %}
+      {% endif %}
+    </select>
+    
+    <button type="submit" class="btn">Zapisz</button>
+  </form>
+</div>
+{% endblock %}

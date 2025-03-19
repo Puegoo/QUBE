@@ -486,8 +486,6 @@ form select:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Możesz usunąć margin-right lub zamienić go na margin-left, 
-     jeśli chcesz zostawić odstęp od krawędzi. */
   margin-right: 0;
 }
 
@@ -560,6 +558,96 @@ form select:focus {
   margin-bottom: 15px;
   border-bottom: 2px solid #8F9085;
   padding-bottom: 5px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  background-color: #f1f1f1;
+  padding: 20px;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 10px; /* zmniejszony odstęp */
+}
+
+/* Lewa część nagłówka: nazwa grupy i przycisk edycji */
+.group-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Prawa część nagłówka: przyciski dodawania */
+.group-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 40px; /* odstęp od prawej krawędzi */
+}
+
+.group-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+  display: inline-block;
+}
+
+.edit-group-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  /* Opcjonalnie, aby wyłączyć marginesy */
+  margin: 0;
+}
+
+/* === MODAL EDYCJI NAZWY GRUPY === */
+#editGroupNameModal .modal-content {
+  max-width: 450px;
+  text-align: center;
+}
+
+#editGroupNameModal h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-footer .btn {
+  background-color: #8F9085;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-top: 10px;
+}
+
+.modal-footer .cancel-btn {
+  background-color: #a83232;
+}
+
+.modal-footer .cancel-btn:hover {
+  background-color: #8f2a2a;
 }
 
 /* Kontener przycisków filtrowania – wyrównany do lewej */
@@ -640,7 +728,6 @@ form select:focus {
   padding: 8px 0;
 }
 
-
 .task-list li strong,
 .member-tasks-list li strong {
   font-weight: 600;
@@ -702,7 +789,7 @@ form select:focus {
 
 /* Kafelek lidera z dodatkową złotą poświatą */
 .leader-tile {
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);  /* złoty blask */
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
 }
 
 /* ============ MODALE (OKIENKA) ============ */
@@ -801,7 +888,7 @@ form select:focus {
   max-height: 250px;
 }
 
-.form-container form fieldset{
+.form-container form fieldset {
   margin-top: 20px;
 }
 
@@ -835,9 +922,9 @@ form select:focus {
   word-wrap: break-word;
   min-width: 40px;
   width: 0;             /* żeby text-overflow działał, trzeba określić szerokość lub max-width */
-  flex: 1;              /* np. flex: 1, by rozciągnąć w dostępnym miejscu */
-  white-space: nowrap;  /* nie pozwala na przejście do nowej linii */
-  overflow: hidden;     /* chowa nadmiar tekstu */
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
@@ -850,7 +937,6 @@ form select:focus {
   justify-content: flex-end;
   color: #777;
   font-style: italic;
-
 }
 
 .priority-icon {
@@ -864,11 +950,11 @@ form select:focus {
   margin: 0;
 }
 
-
 /* === STÓPKA === */
 footer {
   text-align: center;
   padding: 10px;
-  background-color: #fff; border-top: 1px solid #ddd;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
   color: #333;
 }

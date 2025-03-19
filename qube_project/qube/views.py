@@ -6,6 +6,10 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Group, Task, UserNode, MemberRel
 from .forms import GroupForm, UserUpdateForm, CreateGroupForm
@@ -150,9 +154,9 @@ def group_view(request):
     return render(request, 'group/group.html')
 
 @login_required
-def group_detail_view(request, uid):
+def group_detail_view(request, group_uid):
     try:
-        group = Group.nodes.get(uid=uid)
+        group = Group.nodes.get(uid=group_uid)
     except Group.DoesNotExist:
         messages.error(request, "Nie ma takiej grupy.")
         return redirect('dashboard')
@@ -163,12 +167,11 @@ def group_detail_view(request, uid):
     group_members = group.members.all()
     all_tasks = group.tasks.all()
 
-    # Pobierz kryteria filtrowania z GET (np. status, priorytet, data)
+    # Filtrowanie zadań na podstawie parametrów GET (jeśli są)
     status_filter = request.GET.get('status')
     priority_filter = request.GET.get('priority')
-    due_date_filter = request.GET.get('due_date')  # np. "2025-03-20"
+    due_date_filter = request.GET.get('due_date')  # oczekiwany format "YYYY-MM-DD"
 
-    # Przefiltruj zadania
     filtered_tasks = []
     for task in all_tasks:
         if status_filter and task.status != status_filter:
@@ -177,8 +180,6 @@ def group_detail_view(request, uid):
             continue
         if due_date_filter:
             try:
-                # Zamień podaną datę na obiekt date
-                from datetime import datetime
                 due_date_crit = datetime.strptime(due_date_filter, "%Y-%m-%d").date()
                 if task.due_date and task.due_date != due_date_crit:
                     continue
@@ -186,14 +187,14 @@ def group_detail_view(request, uid):
                 pass
         filtered_tasks.append(task)
 
-    # Dla członków – filtrowanie tylko ich zadań (jeśli nie lider)
+    # Jeśli user nie jest liderem, pokaż tylko jego zadania
     user_tasks = []
     if not is_leader:
         for t in filtered_tasks:
             if user_node in t.assigned_to.all():
                 user_tasks.append(t)
 
-    # Buduj mapę zadań przypisanych do poszczególnych członków
+    # Budowanie mapy zadań przypisanych do poszczególnych członków
     member_tasks = {}
     for member in group_members:
         member_tasks[member.username] = []
@@ -201,11 +202,9 @@ def group_detail_view(request, uid):
             if member in t.assigned_to.all():
                 member_tasks[member.username].append(t)
 
-    # Lista użytkowników, którzy nie są członkami (do dodawania)
     all_users = UserNode.nodes.all()
     available_users = [u for u in all_users if u not in group_members]
 
-    # Role członków
     member_roles = {}
     for member in group_members:
         rel = group.members.relationship(member)
@@ -221,7 +220,6 @@ def group_detail_view(request, uid):
         'member_roles': member_roles,
         'is_leader': is_leader,
         'available_users': available_users,
-        # przekazujemy też aktualne filtry, żeby formularz mógł je wyświetlać
         'status_filter': status_filter,
         'priority_filter': priority_filter,
         'due_date_filter': due_date_filter,
@@ -314,3 +312,127 @@ def add_task_view(request, uid):
         return redirect('group_detail', uid=uid)
     else:
         return redirect('group_detail', uid=uid)
+    
+@login_required
+def edit_task_view(request, group_uid, task_uid):
+    try:
+        task = Task.nodes.get(uid=task_uid)
+    except Task.DoesNotExist:
+        messages.error(request, "Zadanie nie istnieje.")
+        return redirect('dashboard')
+    
+    # Znajdź grupę, do której należy zadanie (zakładamy, że zadanie należy do jednej grupy)
+    group = None
+    for g in Group.nodes:
+        if task in g.tasks.all():
+            group = g
+            break
+    if not group:
+        messages.error(request, "Nie można znaleźć grupy dla tego zadania.")
+        return redirect('dashboard')
+
+    user_node = UserNode.nodes.get(username=request.user.username)
+    is_leader = (group.leader.single() == user_node)
+    # Użytkownik może edytować zadanie, jeśli jest liderem lub jest przypisany do zadania
+    if not (is_leader or (user_node in task.assigned_to.all())):
+        messages.error(request, "Brak uprawnień do edycji zadania.")
+        return redirect('group_detail', group_uid=group.uid)
+
+    if request.method == "POST":
+        task.title = request.POST.get('title')
+        task.description = request.POST.get('description')
+        task.priority = request.POST.get('priority')
+        task.status = request.POST.get('status')
+        due_date = request.POST.get('due_date')
+        if due_date:
+            try:
+                task.due_date = datetime.strptime(due_date, "%Y-%m-%d").date()
+            except ValueError:
+                task.due_date = None
+        else:
+            task.due_date = None
+        task.save()
+        task.assigned_to.disconnect_all()
+        assigned_username = request.POST.get('assigned_user')
+        try:
+            assigned_user = UserNode.nodes.get(username=assigned_username)
+            task.assigned_to.connect(assigned_user)
+        except UserNode.DoesNotExist:
+            messages.warning(request, f"Użytkownik {assigned_username} nie istnieje.")
+        messages.success(request, "Zadanie zostało zaktualizowane.")
+        return redirect('group_detail', group_uid=group.uid)
+    else:
+        group_members = group.members.all()
+        context = {
+            'task': task,
+            'group': group,
+            'group_members': group_members,
+        }
+        return render(request, 'group/edit_task.html', context)
+
+
+@login_required
+def edit_member_view(request, group_uid, username):
+    try:
+        group = Group.nodes.get(uid=group_uid)
+    except Group.DoesNotExist:
+        messages.error(request, "Grupa nie istnieje.")
+        return redirect('dashboard')
+    user_node = UserNode.nodes.get(username=request.user.username)
+    is_leader = (group.leader.single() == user_node)
+    if not is_leader:
+        messages.error(request, "Brak uprawnień do edycji członków grupy.")
+        return redirect('group_detail', group_uid=group.uid)
+    try:
+        member = UserNode.nodes.get(username=username)
+    except UserNode.DoesNotExist:
+        messages.error(request, "Użytkownik nie istnieje.")
+        return redirect('group_detail', group_uid=group.uid)
+    
+    if request.method == "POST":
+        new_role = request.POST.get('role')
+        rel = group.members.relationship(member)
+        if new_role:
+            rel.role = new_role
+            rel.save()
+            messages.success(request, f"Rola użytkownika {username} została zaktualizowana.")
+        else:
+            group.members.disconnect(member)
+            messages.success(request, f"Użytkownik {username} został usunięty z grupy.")
+        return redirect('group_detail', group_uid=group.uid)
+    else:
+        current_role = ""
+        rel = group.members.relationship(member)
+        if rel and rel.role:
+            current_role = rel.role
+        context = {
+            'group': group,
+            'member': member,
+            'current_role': current_role,
+        }
+        return render(request, 'group/edit_member.html', context)
+    
+
+@login_required
+@require_POST
+def update_group_name_view(request, uid):
+    try:
+        group = Group.nodes.get(uid=uid)
+    except Group.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Grupa nie istnieje."})
+    
+    user_node = UserNode.nodes.get(username=request.user.username)
+    if group.leader.single() != user_node:
+        return JsonResponse({"success": False, "error": "Brak uprawnień."})
+    
+    try:
+        data = json.loads(request.body)
+        new_name = data.get("name")
+        if new_name:
+            group.name = new_name
+            group.save()
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "error": "Brak nowej nazwy."})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})

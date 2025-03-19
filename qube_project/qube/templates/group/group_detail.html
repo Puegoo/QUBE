@@ -1,84 +1,106 @@
 {% extends 'master.html' %}
 {% load static %}
 {% load dict_extras %}
-{% load arithmetic %}  {# Filtry do priorytetów itp. #}
+{% load arithmetic %}
+
+<script>
+  var currentGroupUid = "{{ group.uid }}";
+</script>
 
 {% block content %}
-<div class="group-detail-container">
 
-<!-- LEWA KOLUMNA – Zadania -->
-<div class="group-detail-left">
-  {% if is_leader %}
-    <h3>Zadania w grupie</h3>
-  {% else %}
-    <h3>Twoje zadania</h3>
-  {% endif %}
-
-<fieldset>
-  <legend>Filtry</legend>
-  <div class="filter-buttons">
-    <button type="button" class="filter-btn" data-filter="due_date" onclick="setTaskFilter('due_date')">
-      <img src="{% static 'icons/data.svg' %}" alt="Data" class="filter-icon">
-    </button>
-    <button type="button" class="filter-btn" data-filter="status" onclick="setTaskFilter('status')">
-      <img src="{% static 'icons/status.svg' %}" alt="Status" class="filter-icon">
-    </button>
-    <button type="button" class="filter-btn" data-filter="priority" onclick="setTaskFilter('priority')">
-      <img src="{% static 'icons/priority.svg' %}" alt="Priorytet" class="filter-icon">
-    </button>
-    <button type="button" class="sort-btn" onclick="toggleTaskSortOrder()">
-      <img src="{% static 'icons/ascending.svg' %}" alt="Sortuj rosnąco" class="sort-icon" id="taskSortIcon">
-    </button>
-  </div>
-</fieldset>
-
-  <ul class="task-list">
+<!-- Nagłówek grupy -->
+<div class="group-header">
+  <div class="group-header-left">
+    <h2 id="groupNameDisplay">{{ group.name }}</h2>
     {% if is_leader %}
-      {% for task in all_tasks %}
-        <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.status }}" data-priority="{{ task.priority }}">
-          <div class="task-tile" style="width: 100%;">
-            <div class="task-tile-left" style="justify-content: flex-start;">
-              <span>{{ task.title }}</span>
-            </div>
-            <div class="task-tile-center">
-              {{ task.status }}
-            </div>
-            <div class="task-tile-right" style="justify-content: flex-end;">
-              <a href="#" class="icon-link" title="Edytuj zadanie" onclick="editTask('{{ task.uid }}')">
-                <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
-              </a>
-            </div>
-          </div>
-        </li>
-      {% empty %}
-        <li>Brak zadań w grupie.</li>
-      {% endfor %}
-    {% else %}
-      {% for task in user_tasks %}
-        <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.status }}" data-priority="{{ task.priority }}">
-          <div class="task-tile" style="width: 100%;">
-            <div class="task-tile-left" style="justify-content: flex-start;">
-              <span>{{ task.title }}</span>
-            </div>
-            <div class="task-tile-center">
-              {{ task.status }}
-            </div>
-            <div class="task-tile-right" style="justify-content: flex-end;">
-              <a href="#" class="icon-link" title="Zmień status zadania" onclick="editTaskStatus('{{ task.uid }}')">
-                <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
-              </a>
-            </div>
-          </div>
-        </li>
-      {% empty %}
-        <li>Nie masz przypisanych zadań.</li>
-      {% endfor %}
+    <button id="editGroupNameButton" onclick="openEditGroupNameModal()" title="Edytuj nazwę grupy" style="background:none; border:none; cursor:pointer;">
+      <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
+    </button>
     {% endif %}
-  </ul>
+  </div>
   {% if is_leader %}
-    <button class="btn add-task-btn" onclick="openAddTaskModal()">Dodaj zadanie</button>
+    <div class="group-header-right">
+      <button type="button" class="filter-btn" onclick="openAddTaskModal()" title="Dodaj zadanie">
+        <img src="{% static 'icons/add_task.svg' %}" alt="Dodaj zadanie" class="filter-icon">
+      </button>
+      <button type="button" class="filter-btn" onclick="openAddMemberModal()" title="Dodaj członka">
+        <img src="{% static 'icons/add_member.svg' %}" alt="Dodaj członka" class="filter-icon">
+      </button>
+    </div>
   {% endif %}
 </div>
+
+<div class="group-detail-container">
+  <!-- LEWA KOLUMNA – Zadania -->
+  <div class="group-detail-left">
+    {% if is_leader %}
+      <h3>Zadania w grupie</h3>
+    {% else %}
+      <h3>Twoje zadania</h3>
+    {% endif %}
+    <fieldset>
+      <legend>Filtry</legend>
+      <div class="filter-buttons">
+        <button type="button" class="filter-btn" data-filter="due_date" onclick="setTaskFilter('due_date')">
+          <img src="{% static 'icons/data.svg' %}" alt="Data" class="filter-icon">
+        </button>
+        <button type="button" class="filter-btn" data-filter="status" onclick="setTaskFilter('status')">
+          <img src="{% static 'icons/status.svg' %}" alt="Status" class="filter-icon">
+        </button>
+        <button type="button" class="filter-btn" data-filter="priority" onclick="setTaskFilter('priority')">
+          <img src="{% static 'icons/priority.svg' %}" alt="Priorytet" class="filter-icon">
+        </button>
+        <button type="button" class="sort-btn" onclick="toggleTaskSortOrder()">
+          <img src="{% static 'icons/ascending.svg' %}" alt="Sortuj rosnąco" class="sort-icon" id="taskSortIcon">
+        </button>
+      </div>
+    </fieldset>
+    <ul class="task-list">
+      {% if is_leader %}
+        {% for task in all_tasks %}
+          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.status }}" data-priority="{{ task.priority }}">
+            <div class="task-tile" style="width: 100%;">
+              <div class="task-tile-left" style="justify-content: flex-start;">
+                <span>{{ task.title }}</span>
+              </div>
+              <div class="task-tile-center">
+                {{ task.status }}
+              </div>
+              <div class="task-tile-right" style="justify-content: flex-end;">
+                <a href="{% url 'edit_task' group.uid task.uid %}" class="icon-link" title="Edytuj zadanie">
+                  <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
+                </a>
+              </div>
+            </div>
+          </li>
+        {% empty %}
+          <li>Brak zadań w grupie.</li>
+        {% endfor %}
+      {% else %}
+        {% for task in user_tasks %}
+          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.status }}" data-priority="{{ task.priority }}">
+            <div class="task-tile" style="width: 100%;">
+              <div class="task-tile-left" style="justify-content: flex-start;">
+                <span>{{ task.title }}</span>
+              </div>
+              <div class="task-tile-center">
+                {{ task.status }}
+              </div>
+              <div class="task-tile-right" style="justify-content: flex-end;">
+                <a href="{% url 'edit_task' group.uid task.uid %}" class="icon-link" title="Zmień status zadania">
+                  <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
+                </a>
+              </div>
+            </div>
+          </li>
+        {% empty %}
+          <li>Nie masz przypisanych zadań.</li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+    <!-- Usunięto przycisk "Dodaj zadanie" z lewej kolumny -->
+  </div>
 
   <!-- ŚRODKOWA KOLUMNA – Lista członków i ich zadania (kafelki) -->
   <div class="group-detail-middle">
@@ -92,18 +114,15 @@
               {% for task in member_tasks|dict_key:member.username %}
                 <li style="border: none; margin: 0; padding: 0;">
                   <div class="task-tile" style="width: 100%;">
-                    <!-- Lewa sekcja: priorytet + nazwa -->
                     <div class="task-tile-left">
                       <span class="priority-icon" style="color: {{ task.priority|priority_color }};">
                         {{ task.priority|priority_symbol }}
                       </span>
                       &nbsp; {{ task.title }}
                     </div>
-                    <!-- Środek: status -->
                     <div class="task-tile-center">
                       {{ task.status }}
                     </div>
-                    <!-- Prawa sekcja: ile dni zostało -->
                     <div class="task-tile-right">
                       {% if task.due_date %}
                         {% if task.days_left != None %}
@@ -133,40 +152,36 @@
     </ul>
   </div>
 
-<!-- PRAWA KOLUMNA – Członkowie grupy (z rolami) -->
-<div class="group-detail-right">
-  <h3>Członkowie grupy</h3>
-  <ul class="member-list">
-    {% for member in group_members %}
-      <li>
-        <div class="member-tile {% if is_leader and member.username == user_node.username %}leader-tile{% endif %}">
-          <!-- Lewa sekcja: nazwa użytkownika -->
-          <div class="member-tile-left">
-            {{ member.username }}
+  <!-- PRAWA KOLUMNA – Członkowie grupy (z rolami) -->
+  <div class="group-detail-right">
+    <h3>Członkowie grupy</h3>
+    <ul class="member-list">
+      {% for member in group_members %}
+        <li>
+          <div class="member-tile {% if is_leader and member.username == user_node.username %}leader-tile{% endif %}">
+            <div class="member-tile-left">
+              {{ member.username }}
+            </div>
+            <div class="member-tile-center">
+              {% if member.username in member_roles %}
+                {{ member_roles|dict_key:member.username }}
+              {% else %}
+                Brak roli
+              {% endif %}
+            </div>
+            <div class="member-tile-right">
+              {% if is_leader %}
+                <a href="{% url 'edit_member' group.uid member.username %}" class="icon-link" title="Modyfikuj członka">
+                  <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
+                </a>
+              {% endif %}
+            </div>
           </div>
-          <!-- Środkowa sekcja: rola -->
-          <div class="member-tile-center">
-            {% if member.username in member_roles %}
-              {{ member_roles|dict_key:member.username }}
-            {% else %}
-              Brak roli
-            {% endif %}
-          </div>
-          <!-- Prawa sekcja: przycisk edycji -->
-          <div class="member-tile-right">
-            {% if is_leader %}
-              <a href="#" class="icon-link" title="Modyfikuj członka" onclick="editMember('{{ member.username }}')">
-                <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
-              </a>
-            {% endif %}
-          </div>
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
-  {% if is_leader %}
-    <button class="btn add-member-btn" onclick="openAddMemberModal()">Dodaj członka</button>
-  {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+    <!-- Usunięto przycisk "Dodaj członka" z prawej kolumny -->
+  </div>
 </div>
 
 <!-- Modal dodawania zadania -->
@@ -185,7 +200,6 @@
         <option value="high">Wysoki</option>
       </select>
       
-      <!-- Pole data oddania -->
       <label>Data oddania</label>
       <input type="date" name="due_date">
       
@@ -235,6 +249,18 @@
         <button type="button" class="cancel-btn" onclick="closeAddMemberModal()">Anuluj</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal edycji nazwy grupy -->
+<div id="editGroupNameModal" class="modal">
+  <div class="modal-content form-container">
+    <h4>Edycja nazwy grupy</h4>
+    <input type="text" id="modalGroupNameInput" class="modal-input" placeholder="Wpisz nową nazwę grupy">
+    <div class="modal-footer">
+      <button type="button" class="btn" onclick="saveGroupNameModal()">Zapisz</button>
+      <button type="button" class="btn cancel-btn" onclick="closeEditGroupNameModal()">Anuluj</button>
+    </div>
   </div>
 </div>
 
