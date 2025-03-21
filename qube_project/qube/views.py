@@ -74,14 +74,17 @@ def dashboard_view(request):
         if g.leader.single() == user_node:
             user_created_groups.append(g)
 
+    # Połącz listy, unikając duplikatów (np. gdy lider nie jest automatycznie członkiem)
+    user_all_groups = list({g.uid: g for g in user_groups + user_created_groups}.values())
+
     # Zadania przypisane do usera
     for t in Task.nodes:
         if user_node in t.assigned_to.all():
             user_tasks.append(t)
 
     context = {
-        'user_groups': user_groups,
-        'user_created_groups': user_created_groups,
+        'user_groups': user_all_groups,  # Zmieniamy, aby przekazać jedną listę grup
+        'user_created_groups': user_created_groups,  # nadal do oznaczenia lidera
         'user_tasks': user_tasks,
     }
     return render(request, 'dashboard/dashboard.html', context)
@@ -96,6 +99,7 @@ def create_group_view(request):
 
         group = Group(name=name).save()
         group.leader.connect(user)
+        group.members.connect(user)
 
         members = request.POST.getlist("members")
         for username in members:
@@ -164,7 +168,13 @@ def group_detail_view(request, group_uid):
     user_node = UserNode.nodes.get(username=request.user.username)
     is_leader = (group.leader.single() == user_node)
 
-    group_members = group.members.all()
+    # Pobierz członków grupy jako listę
+    group_members = list(group.members.all())
+    leader = group.leader.single()
+    # Upewnij się, że lider jest na liście (jeśli nie, dodaj go na początek)
+    if leader not in group_members:
+        group_members.insert(0, leader)
+
     all_tasks = group.tasks.all()
 
     # Filtrowanie zadań na podstawie parametrów GET (jeśli są)
@@ -213,6 +223,7 @@ def group_detail_view(request, group_uid):
 
     context = {
         'group': group,
+        'leader': leader,
         'group_members': group_members,
         'all_tasks': filtered_tasks,
         'user_tasks': user_tasks,
@@ -227,9 +238,9 @@ def group_detail_view(request, group_uid):
     return render(request, 'group/group_detail.html', context)
 
 @login_required
-def add_member_view(request, uid):
+def add_member_view(request, group_uid):
     try:
-        group = Group.nodes.get(uid=uid)
+        group = Group.nodes.get(uid=group_uid)
     except Group.DoesNotExist:
         messages.error(request, "Taka grupa nie istnieje.")
         return redirect('dashboard')
@@ -237,7 +248,7 @@ def add_member_view(request, uid):
     user_node = UserNode.nodes.get(username=request.user.username)
     if group.leader.single() != user_node:
         messages.error(request, "Brak uprawnień do dodawania członków.")
-        return redirect('group_detail', uid=uid)
+        return redirect('group_detail', group_uid=group_uid)
 
     if request.method == 'POST':
         new_member_username = request.POST.get('new_member_username')
@@ -247,7 +258,7 @@ def add_member_view(request, uid):
             new_member_node = UserNode.nodes.get(username=new_member_username)
         except UserNode.DoesNotExist:
             messages.error(request, f"Użytkownik '{new_member_username}' nie istnieje.")
-            return redirect('group_detail', uid=uid)
+            return redirect('group_detail', group_uid=group_uid)
 
         group.members.connect(new_member_node)
         if new_member_role:
@@ -256,14 +267,14 @@ def add_member_view(request, uid):
             rel.save()
 
         messages.success(request, f"Dodano użytkownika '{new_member_username}' z rolą '{new_member_role}'.")
-        return redirect('group_detail', uid=uid)
+        return redirect('group_detail', group_uid=group_uid)
     else:
-        return redirect('group_detail', uid=uid)
+        return redirect('group_detail', group_uid=group_uid)
 
 @login_required
-def add_task_view(request, uid):
+def add_task_view(request, group_uid):
     try:
-        group = Group.nodes.get(uid=uid)
+        group = Group.nodes.get(uid=group_uid)
     except Group.DoesNotExist:
         messages.error(request, "Taka grupa nie istnieje.")
         return redirect('dashboard')
@@ -271,7 +282,7 @@ def add_task_view(request, uid):
     user_node = UserNode.nodes.get(username=request.user.username)
     if group.leader.single() != user_node:
         messages.error(request, "Brak uprawnień do dodawania zadań.")
-        return redirect('group_detail', uid=uid)
+        return redirect('group_detail', group_uid=group_uid)
 
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -309,9 +320,9 @@ def add_task_view(request, uid):
         group.tasks.connect(new_task)
 
         messages.success(request, f"Zadanie '{title}' zostało dodane.")
-        return redirect('group_detail', uid=uid)
+        return redirect('group_detail', group_uid=group_uid)
     else:
-        return redirect('group_detail', uid=uid)
+        return redirect('group_detail', group_uid=group_uid)
     
 @login_required
 def edit_task_view(request, group_uid, task_uid):
@@ -339,26 +350,31 @@ def edit_task_view(request, group_uid, task_uid):
         return redirect('group_detail', group_uid=group.uid)
 
     if request.method == "POST":
-        task.title = request.POST.get('title')
-        task.description = request.POST.get('description')
-        task.priority = request.POST.get('priority')
-        task.status = request.POST.get('status')
-        due_date = request.POST.get('due_date')
-        if due_date:
-            try:
-                task.due_date = datetime.strptime(due_date, "%Y-%m-%d").date()
-            except ValueError:
+        # Jeśli użytkownik jest liderem, aktualizujemy wszystkie pola
+        if is_leader:
+            task.title = request.POST.get('title')
+            task.priority = request.POST.get('priority')
+            due_date = request.POST.get('due_date')
+            if due_date:
+                try:
+                    task.due_date = datetime.strptime(due_date, "%Y-%m-%d").date()
+                except ValueError:
+                    task.due_date = None
+            else:
                 task.due_date = None
-        else:
-            task.due_date = None
+
+            # Aktualizacja pola assigned_user – najpierw odłączamy, potem łączymy
+            task.assigned_to.disconnect_all()
+            assigned_username = request.POST.get('assigned_user')
+            try:
+                assigned_user = UserNode.nodes.get(username=assigned_username)
+                task.assigned_to.connect(assigned_user)
+            except UserNode.DoesNotExist:
+                messages.warning(request, f"Użytkownik {assigned_username} nie istnieje.")
+        # Pola wspólne dla obu: opis i status
+        task.description = request.POST.get('description')
+        task.status = request.POST.get('status')
         task.save()
-        task.assigned_to.disconnect_all()
-        assigned_username = request.POST.get('assigned_user')
-        try:
-            assigned_user = UserNode.nodes.get(username=assigned_username)
-            task.assigned_to.connect(assigned_user)
-        except UserNode.DoesNotExist:
-            messages.warning(request, f"Użytkownik {assigned_username} nie istnieje.")
         messages.success(request, "Zadanie zostało zaktualizowane.")
         return redirect('group_detail', group_uid=group.uid)
     else:
@@ -367,6 +383,7 @@ def edit_task_view(request, group_uid, task_uid):
             'task': task,
             'group': group,
             'group_members': group_members,
+            'is_leader': is_leader,
         }
         return render(request, 'group/edit_task.html', context)
 
@@ -390,15 +407,18 @@ def edit_member_view(request, group_uid, username):
         return redirect('group_detail', group_uid=group.uid)
     
     if request.method == "POST":
-        new_role = request.POST.get('role')
-        rel = group.members.relationship(member)
-        if new_role:
-            rel.role = new_role
-            rel.save()
-            messages.success(request, f"Rola użytkownika {username} została zaktualizowana.")
-        else:
+        if request.POST.get('delete') == "1":
             group.members.disconnect(member)
             messages.success(request, f"Użytkownik {username} został usunięty z grupy.")
+        else:
+            new_role = request.POST.get('role')
+            rel = group.members.relationship(member)
+            if new_role:
+                rel.role = new_role
+                rel.save()
+                messages.success(request, f"Rola użytkownika {username} została zaktualizowana.")
+            else:
+                messages.error(request, "Nie podano roli. Aby usunąć członka, użyj przycisku 'Usuń członka'.")
         return redirect('group_detail', group_uid=group.uid)
     else:
         current_role = ""

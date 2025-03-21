@@ -152,13 +152,27 @@
     </ul>
   </div>
 
-  <!-- PRAWA KOLUMNA – Członkowie grupy (z rolami) -->
-  <div class="group-detail-right">
-    <h3>Członkowie grupy</h3>
-    <ul class="member-list">
-      {% for member in group_members %}
+<!-- PRAWA KOLUMNA – Członkowie grupy (z rolami) -->
+<div class="group-detail-right">
+  <h3>Członkowie grupy</h3>
+  <ul class="member-list">
+    <!-- Lider - wyświetlony na samej górze -->
+    <li class="leader-item">
+      <div class="member-tile leader-tile">
+        <div class="member-tile-left">{{ leader.username }}</div>
+        <div class="member-tile-center">Lider</div>
+        <div class="member-tile-right">
+          <!-- Brak przycisku edycji dla lidera -->
+        </div>
+      </div>
+    </li>
+    <!-- Oddzielenie lidera od reszty -->
+    <hr class="leader-separator">
+    <!-- Pozostali członkowie -->
+    {% for member in group_members %}
+      {% if member.username != leader.username %}
         <li>
-          <div class="member-tile {% if is_leader and member.username == user_node.username %}leader-tile{% endif %}">
+          <div class="member-tile">
             <div class="member-tile-left">
               {{ member.username }}
             </div>
@@ -178,10 +192,10 @@
             </div>
           </div>
         </li>
-      {% endfor %}
-    </ul>
-    <!-- Usunięto przycisk "Dodaj członka" z prawej kolumny -->
-  </div>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  <!-- Przycisk "Dodaj członka" może pozostać poza listą lub być usunięty -->
 </div>
 
 <!-- Modal dodawania zadania -->

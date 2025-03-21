@@ -3,11 +3,26 @@
 {% block content %}
 <div class="form-container">
   <h2>Edycja członka: {{ member.username }}</h2>
-  <form method="POST">
+  <form method="POST" id="editMemberForm">
     {% csrf_token %}
-    <label>Rola (wpisz, aby zaktualizować, lub pozostaw puste, aby usunąć członka)</label>
+    <label>Rola (wpisz, aby zaktualizować)</label>
     <input type="text" name="role" value="{{ current_role }}" placeholder="Wpisz rolę">
     <button type="submit" class="btn">Zapisz</button>
+    <button type="button" class="btn cancel-btn" id="deleteMemberBtn">Usuń członka</button>
+    <!-- Ukryte pole, które będzie wskazywało na usunięcie -->
+    <input type="hidden" name="delete" id="deleteInput" value="0">
   </form>
+</div>
+
+<!-- Modal potwierdzenia usunięcia -->
+<div id="deleteConfirmModal" class="modal">
+  <div class="modal-content form-container">
+    <h4>Potwierdzenie usunięcia</h4>
+    <p>Czy na pewno chcesz usunąć członka {{ member.username }} z grupy?</p>
+    <div class="modal-footer">
+      <button type="button" class="btn" id="confirmDeleteBtn">Tak, usuń</button>
+      <button type="button" class="btn cancel-btn" id="cancelDeleteBtn">Anuluj</button>
+    </div>
+  </div>
 </div>
 {% endblock %}

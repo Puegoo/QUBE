@@ -7,13 +7,13 @@
     {% csrf_token %}
     
     <label>Nazwa zadania</label>
-    <input type="text" name="title" value="{{ task.title }}" required>
+    <input type="text" name="title" value="{{ task.title }}" required {% if not is_leader %}disabled{% endif %}>
     
     <label>Opis</label>
-    <textarea name="description">{{ task.description }}</textarea>
+    <textarea name="description" required>{{ task.description }}</textarea>
     
     <label>Priorytet</label>
-    <select name="priority">
+    <select name="priority" {% if not is_leader %}disabled{% endif %}>
       <option value="low" {% if task.priority == "low" %}selected{% endif %}>Niski</option>
       <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Średni</option>
       <option value="high" {% if task.priority == "high" %}selected{% endif %}>Wysoki</option>
@@ -27,10 +27,10 @@
     </select>
     
     <label>Data oddania</label>
-    <input type="date" name="due_date" value="{% if task.due_date %}{{ task.due_date }}{% endif %}">
+    <input type="date" name="due_date" value="{% if task.due_date %}{{ task.due_date }}{% endif %}" {% if not is_leader %}disabled{% endif %}>
     
     <label>Przydziel do</label>
-    <select name="assigned_user">
+    <select name="assigned_user" {% if not is_leader %}disabled{% endif %}>
       {% if task.assigned_to.all %}
         {% with assigned=task.assigned_to.all|first %}
           {% for member in group_members %}

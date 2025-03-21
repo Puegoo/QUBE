@@ -254,6 +254,24 @@ form select:focus {
 }
 
 /* ============ DASHBOARD ============ */
+.dashboard-header {
+  width: 100%;
+  box-sizing: border-box; /* Dodane, aby padding nie zwiększał szerokości */
+  background-color: #f1f1f1;
+  padding: 15px;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.dashboard-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: #333;    
+  display: inline-block;
+  margin-left: 10px;
+}
+
 .dashboard-container {
   display: flex;
   gap: 20px;
@@ -307,9 +325,8 @@ form select:focus {
   font-size: 1rem;
 }
 
-.leader-crown {
-  font-size: 1.3rem;
-  color: gold;
+.leader-icon {
+  font-size: 1rem;
   position: absolute;
   right: 10px;
   top: 8px;
@@ -321,6 +338,7 @@ form select:focus {
   text-align: center;
   margin-top: 10px;
 }
+
 
 /* Prawy panel - Zadania */
 .dashboard-main {
@@ -463,6 +481,14 @@ form select:focus {
   margin: 0;
 }
 
+.leader-item {
+  margin-bottom: 20px;
+}
+
+.leader-separator {
+  border-bottom: 2px solid #8F9085;
+}
+
 .user-item {
   display: flex;
   align-items: center;        /* Wyrównanie w pionie na środek */
@@ -564,12 +590,12 @@ form select:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative;
   width: 100%;
+  box-sizing: border-box;  /* Kluczowe ustawienie, aby padding nie zwiększał szerokości */
   background-color: #f1f1f1;
-  padding: 20px;
+  padding: 15px 20px;  /* Ustawiamy padding, np. 15px góra/dół i 20px lewo/prawo */
   border-bottom: 2px solid #ddd;
-  margin-bottom: 10px; /* zmniejszony odstęp */
+  margin-bottom: 10px; /* mniejszy odstęp od sekcji poniżej */
 }
 
 /* Lewa część nagłówka: nazwa grupy i przycisk edycji */
@@ -577,6 +603,8 @@ form select:focus {
   display: flex;
   align-items: center;
   gap: 10px;
+  /* Usunięcie dodatkowego marginesu, aby nie powodował overflow */
+  margin-left: 0;
 }
 
 /* Prawa część nagłówka: przyciski dodawania */
@@ -584,7 +612,8 @@ form select:focus {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-right: 40px; /* odstęp od prawej krawędzi */
+  /* Zamiast margin-right, możesz użyć padding wewnątrz .group-header */
+  margin-right: 0;
 }
 
 .group-header h2 {
@@ -789,7 +818,17 @@ form select:focus {
 
 /* Kafelek lidera z dodatkową złotą poświatą */
 .leader-tile {
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  border: 2px solid rgba(255, 215, 0, 0.7);
+}
+
+.leader-item {
+  margin-bottom: 20px;
+}
+
+.leader-separator {
+  border: 0;
+  border-top: 2px solid #ddd;
+  margin: 10px 0;
 }
 
 /* ============ MODALE (OKIENKA) ============ */

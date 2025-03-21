@@ -219,6 +219,28 @@ if (!window.groupDetailScriptLoaded) {
     });
   };
 
+  // Funkcje obsługujące modal potwierdzający usunięcie członka w edycji członka
+  window.openDeleteConfirmModal = function() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) modal.style.display = 'flex';
+  };
+
+  window.closeDeleteConfirmModal = function() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.confirmDeleteMember = function() {
+    const deleteInput = document.getElementById('deleteInput');
+    if (deleteInput) {
+      deleteInput.value = "1";
+    }
+    const form = document.getElementById('editMemberForm');
+    if (form) {
+      form.submit();
+    }
+  };
+
   // Funkcja pomocnicza do pobierania CSRF tokenu z ciasteczek
   function getCookie(name) {
     let cookieValue = null;
