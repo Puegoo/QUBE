@@ -255,12 +255,13 @@ form select:focus {
 
 /* ============ DASHBOARD ============ */
 .dashboard-header {
-  width: 100%;
-  box-sizing: border-box; /* Dodane, aby padding nie zwiększał szerokości */
-  background-color: #f1f1f1;
-  padding: 15px;
-  border-bottom: 2px solid #ddd;
-  margin-bottom: 20px;
+  width: calc(100% - 40px);
+  box-sizing: border-box;
+  background-color: #fff;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 10px 20px 0px 20px;
   text-align: left;
 }
 
@@ -291,6 +292,7 @@ form select:focus {
   border-bottom: 2px solid #8F9085;
   padding-bottom: 5px;
   margin-bottom: 15px;
+  margin-top: 10px;
 }
 
 /* Lista grup */
@@ -353,6 +355,7 @@ form select:focus {
   font-size: 1.5rem;
   border-bottom: 2px solid #8F9085;
   margin-bottom: 15px;
+  margin-top: 10px;
 }
 
 .dashboard-main ul {
@@ -590,12 +593,13 @@ form select:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  box-sizing: border-box;  /* Kluczowe ustawienie, aby padding nie zwiększał szerokości */
-  background-color: #f1f1f1;
-  padding: 15px 20px;  /* Ustawiamy padding, np. 15px góra/dół i 20px lewo/prawo */
-  border-bottom: 2px solid #ddd;
-  margin-bottom: 10px; /* mniejszy odstęp od sekcji poniżej */
+  box-sizing: border-box;
+  width: calc(100% - 40px); /* odejmujemy padding */
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 10px 20px 0px 20px;
 }
 
 /* Lewa część nagłówka: nazwa grupy i przycisk edycji */
