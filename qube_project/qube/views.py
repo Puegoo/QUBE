@@ -82,10 +82,19 @@ def dashboard_view(request):
         if user_node in t.assigned_to.all():
             user_tasks.append(t)
 
+    # Dla każdego zadania znajdź pierwszą grupę, w której się znajduje
+    task_group_mapping = {}
+    for task in user_tasks:
+        for group in user_all_groups:
+            if task in group.tasks.all():
+                task_group_mapping[task.uid] = group.name
+                break  # Break jest już w Pythonie, tutaj to działa
+
     context = {
-        'user_groups': user_all_groups,  # Zmieniamy, aby przekazać jedną listę grup
-        'user_created_groups': user_created_groups,  # nadal do oznaczenia lidera
+        'user_groups': user_all_groups,  # wszystkie grupy użytkownika
+        'user_created_groups': user_created_groups,  # lista grup, w których użytkownik jest liderem
         'user_tasks': user_tasks,
+        'task_group_mapping': task_group_mapping,
     }
     return render(request, 'dashboard/dashboard.html', context)
 

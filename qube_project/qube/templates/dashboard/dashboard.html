@@ -1,5 +1,7 @@
 {% extends 'master.html' %}
 {% load static %}
+{% load arithmetic %}
+{% load dict_extras %}
 {% block content %}
   <div class="dashboard-header">
     <h2>Witaj, {{ user.username }}</h2>
@@ -14,7 +16,9 @@
               <li class="group-item">
                 <a href="{% url 'group_detail' group.uid %}" class="group-link">{{ group.name }}</a>
                 {% if group in user_created_groups %}
-                  <span class="leader-icon"><img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px"></span>
+                  <span class="leader-icon">
+                    <img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px">
+                  </span>
                 {% endif %}
               </li>
             {% endfor %}
@@ -22,7 +26,9 @@
               {% if group not in user_groups %}
                 <li class="group-item">
                   <a href="{% url 'group_detail' group.uid %}" class="group-link">{{ group.name }}</a>
-                  <span class="leader-icon"><img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px"></span>
+                  <span class="leader-icon">
+                    <img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px">
+                  </span>
                 </li>
               {% endif %}
             {% endfor %}
@@ -36,18 +42,48 @@
       <div class="dashboard-main">
           <h2>Twoje zadania</h2>
           {% if user_tasks %}
-              <ul class="task-list">
-                  {% for task in user_tasks %}
-                      <li class="task-item">
-                          <span class="task-title">{{ task.title }}</span>
-                          <span class="task-status {% if task.status == 'done' %}completed{% elif task.status == 'in-progress' %}in-progress{% else %}pending{% endif %}">
-                              {{ task.get_status_display }}
-                          </span>
-                      </li>
-                  {% endfor %}
-              </ul>
+            <ul class="task-list">
+              {% for task in user_tasks %}
+                <li class="task-item">
+                  <!-- Priorytet -->
+                  <span class="task-priority">
+                    <span class="priority-icon" style="color: {{ task.priority|priority_color }};">
+                      {{ task.priority|priority_symbol }}
+                    </span>
+                  </span>
+                  <!-- Nazwa zadania (pogrubiona) -->
+                  <span class="task-title">
+                    <strong>{{ task.title }}</strong>
+                  </span>
+                  <!-- Grupa, w której jest zadanie (wyświetlamy z task_group_mapping) -->
+                  <span class="task-group">
+                    {{ task_group_mapping|dict_key:task.uid }}
+                  </span>
+                  <!-- Status zadania -->
+                  <span class="task-status {% if task.status == 'done' %}completed{% elif task.status == 'in-progress' %}in-progress{% else %}pending{% endif %}">
+                    {{ task.get_status_display }}
+                  </span>
+                  <!-- Czas do końca (szaro, kursywą) -->
+                  <span class="task-deadline" style="color: gray; font-style: italic;">
+                    {% if task.due_date %}
+                      {% if task.days_left != None %}
+                        {% if task.days_left >= 0 %}
+                          Za {{ task.days_left }} dni
+                        {% else %}
+                          Po terminie
+                        {% endif %}
+                      {% else %}
+                        brak terminu
+                      {% endif %}
+                    {% else %}
+                      brak terminu
+                    {% endif %}
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
           {% else %}
-              <p class="empty-text">Nie masz przypisanych zadań.</p>
+            <p class="empty-text">Nie masz przypisanych zadań.</p>
           {% endif %}
       </div>
   </div>

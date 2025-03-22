@@ -292,7 +292,7 @@ form select:focus {
   border-bottom: 2px solid #8F9085;
   padding-bottom: 5px;
   margin-bottom: 15px;
-  margin-top: 10px;
+  margin-top: 0px;
 }
 
 /* Lista grup */
@@ -334,6 +334,11 @@ form select:focus {
   top: 8px;
 }
 
+.leader-icon img {
+  height: 25px;  /* zwiększona wysokość z 20px na 30px */
+  width: auto;
+}
+
 .empty-text {
   color: #777;
   font-style: italic;
@@ -355,7 +360,7 @@ form select:focus {
   font-size: 1.5rem;
   border-bottom: 2px solid #8F9085;
   margin-bottom: 15px;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .dashboard-main ul {
@@ -489,7 +494,7 @@ form select:focus {
 }
 
 .leader-separator {
-  border-bottom: 2px solid #8F9085;
+  border-bottom: 2px solid #ddd;
 }
 
 .user-item {
@@ -822,7 +827,7 @@ form select:focus {
 
 /* Kafelek lidera z dodatkową złotą poświatą */
 .leader-tile {
-  border: 2px solid rgba(255, 215, 0, 0.7);
+  border: 2px solid #ddd(0, 0, 0, 0.7);
 }
 
 .leader-item {
@@ -946,6 +951,34 @@ form select:focus {
   padding: 6px 8px;
   margin: 8px 0;
   max-width: 97%;
+}
+
+.task-priority {
+  width: 50px;
+  text-align: center;
+}
+
+.task-title {
+  flex: 2;
+  text-align: left;
+  padding: 0 10px;
+}
+
+.task-group {
+  flex: 1;
+  text-align: center;
+}
+
+.task-status {
+  flex: 1;
+  text-align: center;
+}
+
+.task-deadline {
+  width: 120px;
+  text-align: center;
+  color: gray;
+  font-style: italic;
 }
 
 /* Zmniejszamy marginesy i usuwamy dodatkowe przesunięcia, aby kafelek był lepiej wyśrodkowany */
