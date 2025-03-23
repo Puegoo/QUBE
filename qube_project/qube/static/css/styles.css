@@ -235,6 +235,15 @@ form select:focus {
   transform: translateY(-2px);
 }
 
+.form-container form .btn.cancel-btn {
+  background-color: #a83232 !important;  /* czerwony kolor */
+  color: #fff;
+}
+
+.form-container form .btn.cancel-btn:hover {
+  background-color: #8f2a2a !important;
+}
+
 /* ============ REJESTRACJA/LOGOWANIE LINKI ============ */
 .register-link, .login-link {
   margin-top: 30px;
@@ -887,6 +896,32 @@ form select:focus {
   position: relative;
 }
 
+.modal-content h4 {
+  margin: 0;
+}
+
+/* Stylizacja inputów i textarea w modalu, aby pasowały do reszty formularzy */
+.modal-content input[type="text"],
+.modal-content textarea,
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Opcjonalnie – dopasowanie placeholdera */
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+  color: #777;
+  font-style: italic;
+}
+
 @keyframes fadeInModal {
   0% {
     opacity: 0;
@@ -951,6 +986,8 @@ form select:focus {
 .modal-content .cancel-btn:hover {
   background-color: #8f2a2a;
 }
+
+
 
 /* Allow textarea to resize only vertically */
 .form-container form textarea {

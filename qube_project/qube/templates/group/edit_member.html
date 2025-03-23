@@ -2,15 +2,26 @@
 {% load static %}
 {% block content %}
 <div class="form-container">
-  <h2>Edycja członka: {{ member.username }}</h2>
+  <h2>Edycja członka: <span id="memberUsername">{{ member.username }}</span></h2>
   <form method="POST" id="editMemberForm">
     {% csrf_token %}
+    
     <label>Rola (wpisz, aby zaktualizować)</label>
     <input type="text" name="role" value="{{ current_role }}" placeholder="Wpisz rolę">
-    <button type="submit" class="btn">Zapisz</button>
-    <button type="button" class="btn cancel-btn" id="deleteMemberBtn">Usuń członka</button>
-    <!-- Ukryte pole, które będzie wskazywało na usunięcie -->
+    
+    <!-- Przyciski akcji: Zapisz -->
+    <div class="modal-footer">
+      <button type="submit" class="btn">Zapisz</button>
+    </div>
+    
+    <!-- Przyciski akcji: Usuń członka (umieszczony poniżej) -->
+    <div class="modal-footer">
+      <button type="button" class="btn cancel-btn" id="deleteMemberBtn" onclick="openDeleteConfirmModal()">Usuń członka</button>
+    </div>
+    
+    <!-- Ukryte pola do akcji usunięcia -->
     <input type="hidden" name="delete" id="deleteInput" value="0">
+    <input type="hidden" name="delete_tasks" id="deleteTasksInput" value="0">
   </form>
 </div>
 
@@ -18,10 +29,21 @@
 <div id="deleteConfirmModal" class="modal">
   <div class="modal-content form-container">
     <h4>Potwierdzenie usunięcia</h4>
-    <p>Czy na pewno chcesz usunąć członka {{ member.username }} z grupy?</p>
+    <p>Czy na pewno chcesz usunąć członka <strong>{{ member.username }}</strong> z grupy?</p>
+    
+    <!-- Dodajemy sekcję potwierdzającą wpisanie nazwy użytkownika -->
+    <label style="display:block; margin:10px 0;">Wpisz nazwę użytkownika, aby potwierdzić:</label>
+    <input type="text" id="confirmUsername" placeholder="Wpisz nazwę użytkownika">
+    
+    <!-- Checkbox do usunięcia zadań przypisanych do członka -->
+    <label style="display:block; margin:10px 0;">
+      <input type="checkbox" id="deleteTasksCheckbox" name="delete_tasks" value="1">
+      Usuń również wszystkie zadania przypisane do tego członka w grupie
+    </label>
+    
     <div class="modal-footer">
-      <button type="button" class="btn" id="confirmDeleteBtn">Tak, usuń</button>
-      <button type="button" class="btn cancel-btn" id="cancelDeleteBtn">Anuluj</button>
+      <button type="button" class="btn" id="confirmDeleteBtn" onclick="confirmDeleteMember()">Tak, usuń</button>
+      <button type="button" class="btn cancel-btn" id="cancelDeleteBtn" onclick="closeDeleteConfirmModal()">Anuluj</button>
     </div>
   </div>
 </div>

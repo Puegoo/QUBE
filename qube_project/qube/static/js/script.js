@@ -219,27 +219,44 @@ if (!window.groupDetailScriptLoaded) {
     });
   };
 
-  // Funkcje obsługujące modal potwierdzający usunięcie członka w edycji członka
-  window.openDeleteConfirmModal = function() {
-    const modal = document.getElementById('deleteConfirmModal');
-    if (modal) modal.style.display = 'flex';
-  };
+  // Funkcje obsługujące modal potwierdzający usunięcie członka w edycji członka// Funkcje obsługujące modal potwierdzający usunięcie członka
+window.openDeleteConfirmModal = function() {
+  const modal = document.getElementById('deleteConfirmModal');
+  if (modal) modal.style.display = 'flex';
+};
 
-  window.closeDeleteConfirmModal = function() {
-    const modal = document.getElementById('deleteConfirmModal');
-    if (modal) modal.style.display = 'none';
-  };
+window.closeDeleteConfirmModal = function() {
+  const modal = document.getElementById('deleteConfirmModal');
+  if (modal) modal.style.display = 'none';
+};
 
-  window.confirmDeleteMember = function() {
-    const deleteInput = document.getElementById('deleteInput');
-    if (deleteInput) {
-      deleteInput.value = "1";
-    }
-    const form = document.getElementById('editMemberForm');
-    if (form) {
-      form.submit();
-    }
-  };
+window.confirmDeleteMember = function() {
+  const confirmUsernameInput = document.getElementById('confirmUsername');
+  const enteredUsername = confirmUsernameInput ? confirmUsernameInput.value.trim() : "";
+  const memberUsername = document.getElementById('memberUsername').textContent.trim();
+  
+  // Jeśli nie wpisano poprawnej nazwy, pokazujemy alert
+  if (enteredUsername !== memberUsername) {
+    alert("Wpisana nazwa nie zgadza się z nazwą członka!");
+    return;
+  }
+  
+  const deleteInput = document.getElementById('deleteInput');
+  const deleteTasksCheckbox = document.getElementById('deleteTasksCheckbox');
+  const deleteTasksInput = document.getElementById('deleteTasksInput');
+
+  if (deleteInput) {
+    deleteInput.value = "1";
+  }
+  if (deleteTasksInput) {
+    deleteTasksInput.value = deleteTasksCheckbox.checked ? "1" : "0";
+  }
+  
+  const form = document.getElementById('editMemberForm');
+  if (form) {
+    form.submit();
+  }
+};
 
   // Funkcja pomocnicza do pobierania CSRF tokenu z ciasteczek
   function getCookie(name) {

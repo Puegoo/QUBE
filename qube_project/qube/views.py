@@ -127,7 +127,8 @@ def create_group_view(request):
         messages.success(request, "Grupa została utworzona!")
         return redirect('dashboard')
 
-    all_users = UserNode.nodes.all()
+    # Wykluczamy aktualnie zalogowanego użytkownika
+    all_users = [u for u in UserNode.nodes.all() if u.username != request.user.username]
     return render(request, 'dashboard/create_group.html', {'all_users': all_users})
 
 # ========== USTAWIENIA UŻYTKOWNIKA (zmiana danych i hasła) ==========
@@ -417,6 +418,22 @@ def edit_member_view(request, group_uid, username):
     
     if request.method == "POST":
         if request.POST.get('delete') == "1":
+            # Jeśli checkbox delete_tasks został zaznaczony, usuwamy zadania przypisane do tego członka
+            if request.POST.get('delete_tasks') == "1":
+                # Pobieramy listę zadań, w których dany członek jest przypisany
+                tasks_to_delete = [task for task in group.tasks.all() if member in task.assigned_to.all()]
+                for task in tasks_to_delete:
+                    # Odłączamy zadanie od grupy (usuwamy je z relacji grupowych zadań)
+                    group.tasks.disconnect(task)
+                    # Usuwamy zadanie z bazy
+                    task.delete()
+                # Zapisujemy zmiany w grupie, żeby odświeżyć relacje
+                group.save()
+            else:
+                # Jeśli checkbox nie jest zaznaczony – tylko usuwamy przypisanie członka do zadań
+                for task in group.tasks.all():
+                    if member in task.assigned_to.all():
+                        task.assigned_to.disconnect(member)
             group.members.disconnect(member)
             messages.success(request, f"Użytkownik {username} został usunięty z grupy.")
         else:
@@ -440,7 +457,6 @@ def edit_member_view(request, group_uid, username):
             'current_role': current_role,
         }
         return render(request, 'group/edit_member.html', context)
-    
 
 @login_required
 @require_POST
@@ -480,6 +496,15 @@ def delete_group_view(request, group_uid):
         messages.error(request, "Brak uprawnień do usunięcia grupy.")
         return redirect('group_detail', group_uid=group_uid)
 
+    # 1. Pobieramy wszystkie zadania z tej grupy
+    tasks_in_group = group.tasks.all()
+
+    # 2. Usuwamy każde zadanie (co usuwa także powiązania z assigned_user)
+    for task in tasks_in_group:
+        task.delete()
+
+    # 3. Na końcu usuwamy samą grupę
     group.delete()
-    messages.success(request, "Grupa została usunięta.")
+
+    messages.success(request, "Grupa oraz wszystkie jej zadania zostały usunięte.")
     return redirect('dashboard')
