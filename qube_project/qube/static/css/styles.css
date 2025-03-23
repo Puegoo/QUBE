@@ -695,7 +695,6 @@ form select:focus {
   margin-bottom: 15px;
   justify-content: flex-start;
   padding: 2px 0 0 0;
-  margin: 0px;
 }
 
 /* Przyciski filtrowania jako zaokrąglone prostokąty (podobne do innych przycisków) */
