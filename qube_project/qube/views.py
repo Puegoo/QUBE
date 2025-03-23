@@ -465,3 +465,21 @@ def update_group_name_view(request, uid):
             return JsonResponse({"success": False, "error": "Brak nowej nazwy."})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
+    
+@login_required
+@require_POST
+def delete_group_view(request, group_uid):
+    try:
+        group = Group.nodes.get(uid=group_uid)
+    except Group.DoesNotExist:
+        messages.error(request, "Grupa nie istnieje.")
+        return redirect('dashboard')
+
+    user_node = UserNode.nodes.get(username=request.user.username)
+    if group.leader.single() != user_node:
+        messages.error(request, "Brak uprawnień do usunięcia grupy.")
+        return redirect('group_detail', group_uid=group_uid)
+
+    group.delete()
+    messages.success(request, "Grupa została usunięta.")
+    return redirect('dashboard')

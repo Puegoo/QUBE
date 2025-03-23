@@ -621,8 +621,31 @@ form select:focus {
   display: flex;
   align-items: center;
   gap: 10px;
-  /* Zamiast margin-right, możesz użyć padding wewnątrz .group-header */
   margin-right: 0;
+}
+
+.group-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.remove-group-form {
+  display: flex;
+  align-items: center;
+  margin: 0; 
+  padding: 0; 
+}
+
+.remove-group-form img {
+  width: 20px;
+  height: 20px;
+}
+
+.vertical-divider {
+  height: 30px;
+  width: 1px;
+  background-color: #ccc;
+  margin: 0 10px;
 }
 
 .group-header h2 {

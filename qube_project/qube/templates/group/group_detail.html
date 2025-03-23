@@ -20,14 +20,29 @@
     {% endif %}
   </div>
   {% if is_leader %}
-    <div class="group-header-right">
+  <div class="group-header-right">
+    <div class="group-actions">
+      <!-- Przycisk dodawania zadania -->
       <button type="button" class="filter-btn" onclick="openAddTaskModal()" title="Dodaj zadanie">
         <img src="{% static 'icons/add_task.svg' %}" alt="Dodaj zadanie" class="filter-icon">
       </button>
+      <!-- Przycisk dodawania członka -->
       <button type="button" class="filter-btn" onclick="openAddMemberModal()" title="Dodaj członka">
         <img src="{% static 'icons/add_member.svg' %}" alt="Dodaj członka" class="filter-icon">
       </button>
     </div>
+  
+    <div class="vertical-divider"></div>
+  
+    <!-- Formularz usuwania grupy -->
+    <form method="POST" action="{% url 'delete_group' group.uid %}" class="remove-group-form" 
+          onsubmit="return confirm('Czy na pewno chcesz usunąć tę grupę?');">
+      {% csrf_token %}
+      <button type="submit" class="filter-btn" title="Usuń grupę">
+        <img src="{% static 'icons/remove_group.svg' %}" alt="Usuń grupę" class="filter-icon">
+      </button>
+    </form>
+  </div>
   {% endif %}
 </div>
 
