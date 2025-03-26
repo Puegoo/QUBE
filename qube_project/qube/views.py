@@ -59,7 +59,12 @@ def logout_view(request):
 # ========== DASHBOARD (Neo4j) ==========
 @login_required
 def dashboard_view(request):
-    user_node = UserNode.nodes.get(username=request.user.username)
+    try:
+        user_node = UserNode.nodes.get(username=request.user.username)
+    except UserNode.DoesNotExist:
+        # Tworzymy brakujący węzeł UserNode
+        user_node = UserNode(username=request.user.username, email=request.user.email).save()
+
     user_groups = []
     user_created_groups = []
     user_tasks = []
@@ -74,7 +79,7 @@ def dashboard_view(request):
         if g.leader.single() == user_node:
             user_created_groups.append(g)
 
-    # Połącz listy, unikając duplikatów (np. gdy lider nie jest automatycznie członkiem)
+    # Połącz listy, unikając duplikatów
     user_all_groups = list({g.uid: g for g in user_groups + user_created_groups}.values())
 
     # Zadania przypisane do usera
@@ -82,17 +87,16 @@ def dashboard_view(request):
         if user_node in t.assigned_to.all():
             user_tasks.append(t)
 
-    # Dla każdego zadania znajdź pierwszą grupę, w której się znajduje
     task_group_mapping = {}
     for task in user_tasks:
         for group in user_all_groups:
             if task in group.tasks.all():
                 task_group_mapping[task.uid] = group.name
-                break  # Break jest już w Pythonie, tutaj to działa
+                break
 
     context = {
-        'user_groups': user_all_groups,  # wszystkie grupy użytkownika
-        'user_created_groups': user_created_groups,  # lista grup, w których użytkownik jest liderem
+        'user_groups': user_all_groups,
+        'user_created_groups': user_created_groups,
         'user_tasks': user_tasks,
         'task_group_mapping': task_group_mapping,
     }
