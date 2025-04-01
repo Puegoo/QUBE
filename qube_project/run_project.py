@@ -33,8 +33,8 @@ def main():
     run_command([sys.executable, "-m", "pip", "install", "django"])
     
     # Uruchomienie migracji
-    run_command([sys.executable, "manage.py", "makemigrations"])
-    run_command([sys.executable, "manage.py", "migrate"])
+    # run_command([sys.executable, "manage.py", "makemigrations"])
+    # run_command([sys.executable, "manage.py", "migrate"])
     
     # Seed danych – upewnij się, że masz komendę seed_data w appce (np. jako custom management command)
     run_command([sys.executable, "manage.py", "seed_data"])

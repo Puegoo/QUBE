@@ -1,86 +1,160 @@
 # qube/management/commands/seed_data.py
 
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
 from qube.models import Group, Task, UserNode, MemberRel
 from datetime import date, timedelta
 import random
-
-User = get_user_model()
+from django.contrib.auth.hashers import make_password
 
 class Command(BaseCommand):
-    help = "Seed database with sample data: 10 users, 4 groups, 20 tasks."
+    help = "Wypełnia bazę przykładowymi danymi: 20 użytkowników, 8 grup (3-8 członków) z rolami, 50 zadań (low/medium/high)."
 
     def handle(self, *args, **options):
         self.stdout.write("Rozpoczynam seeding danych...")
 
-        # 1. Tworzymy 10 użytkowników Django i odpowiadające im węzły Neo4j
-        for i in range(1, 11):
-            username = f"user{i}"
-            email = f"user{i}@example.com"
-            password = "zaq1@WSX"
-            user, created = User.objects.get_or_create(username=username, defaults={"email": email})
-            if created:
-                user.set_password(password)
-                user.save()
-                self.stdout.write(f"Utworzono użytkownika {username} w systemie Django.")
-            else:
-                self.stdout.write(f"Użytkownik {username} już istnieje.")
-
-            # Sprawdzamy, czy węzeł UserNode istnieje – jeśli nie, tworzymy go.
+        # 1. Tworzymy 20 użytkowników w Neo4j z polskimi imionami
+        user_names = [
+            "Anna", "Bartek", "Celina", "Dawid", "Ewa",
+            "Filip", "Grażyna", "Hubert", "Iwona", "Julia",
+            "Kacper", "Lena", "Michał", "Natalia", "Oskar",
+            "Paulina", "Robert", "Sylwia", "Tomasz", "Weronika"
+        ]
+        users = {}
+        for name in user_names:
+            username = name
+            email = f"{name.lower()}@przyklad.com"
+            password = make_password("zaq1@WSX")  # hasło testowe
             try:
-                UserNode.nodes.get(username=username)
+                user_node = UserNode.nodes.get(username=username)
+                self.stdout.write(f"Użytkownik {username} już istnieje.")
             except UserNode.DoesNotExist:
-                UserNode(username=username, email=email).save()
-                self.stdout.write(f"Utworzono węzeł UserNode dla {username}.")
+                user_node = UserNode(username=username, email=email, password=password).save()
+                self.stdout.write(f"Utworzono użytkownika {username}.")
+            users[username] = user_node
 
-        # 2. Tworzymy 4 grupy; liderami są user1, user2, user3, user4
+        # 2. Tworzymy 8 grup z polskimi nazwami (3-8 członków w każdej)
+        group_names = [
+            "Programiści", "Projektanci", "Marketing", "Wsparcie Techniczne",
+            "HR", "Sprzedaż", "Finanse", "Badania i Rozwój"
+        ]
         groups = {}
-        for i in range(1, 5):
-            group_name = f"group{i}"
-            leader_username = f"user{i}"
-            leader_node = UserNode.nodes.get(username=leader_username)
+        # Zestaw przykładowych ról (oprócz lidera)
+        member_roles = ["Developer", "Designer", "Tester", "Scrum Master", "PM"]
+
+        for group_name in group_names:
+            # Losujemy liczbę członków od 3 do 8
+            num_members = random.randint(3, 8)
+            # Wybieramy losowo num_members z listy użytkowników
+            members = random.sample(list(users.values()), num_members)
+            # Losowo wybieramy lidera spośród wybranych członków
+            leader = random.choice(members)
+            # Tworzymy grupę
             group = Group(name=group_name).save()
-            group.leader.connect(leader_node)
-            group.members.connect(leader_node)
-            groups[group_name] = group
-            self.stdout.write(f"Utworzono grupę {group_name} z liderem {leader_username}.")
+            # Ustawiamy lidera
+            group.leader.connect(leader)
 
-        # (Opcjonalnie) Dodajemy dodatkowych członków do każdej grupy – wybieramy losowo 2 osoby spośród user5 do user10
-        for group in groups.values():
-            potential_members = [UserNode.nodes.get(username=f"user{i}") for i in range(5, 11)]
-            extra_members = random.sample(potential_members, 2)
-            for member in extra_members:
-                if member not in group.members.all():
-                    group.members.connect(member)
+            for member in members:
+                group.members.connect(member)
+                # Jeśli dany member jest liderem – przypisujemy rolę "Leader", w przeciwnym razie losową rolę
+                if member == leader:
+                    role = "Leader"
+                else:
+                    role = random.choice(member_roles)
+                # Zapisujemy rolę w relacji
+                rel = group.members.relationship(member)
+                rel.role = role
+                rel.save()
+
             group.save()
+            groups[group_name] = group
+            self.stdout.write(f"Utworzono grupę '{group_name}' z liderem {leader.username} i {num_members} członkami.")
 
-        # 3. Tworzymy 20 zadań
-        # Zadania przydzielane są do losowo wybranej grupy, a następnie losowo do jednego z jej członków.
-        priorities = ["low", "medium", "high"]
-        statuses = ["pending", "in-progress", "done"]
-        for i in range(1, 21):
-            task_name = f"task{i}"
+        # 3. Tworzymy 50 zadań z priorytetami kompatybilnymi z templatkami
+        priorities = ["low", "medium", "high"]  # pasują do filtra priority_symbol/priority_color
+        statuses = ["oczekujące", "w trakcie", "zakończone"]
+        sample_tasks = [
+            "Implementacja funkcji logowania",
+            "Naprawa błędu płatności",
+            "Projektowanie strony głównej",
+            "Aktualizacja panelu użytkownika",
+            "Optymalizacja zapytań do bazy",
+            "Poprawa responsywności mobilnej",
+            "Stworzenie kampanii marketingowej",
+            "Planowanie premiery produktu",
+            "Redesign logo firmy",
+            "Napisanie artykułu o SEO",
+            "Konfiguracja testów A/B",
+            "Przeprojektowanie układu strony",
+            "Opracowanie REST API",
+            "Badanie opinii użytkowników",
+            "Aktualizacja polityki prywatności",
+            "Integracja usługi zewnętrznej",
+            "Poprawa dostępności strony",
+            "Przygotowanie prezentacji inwestorskiej",
+            "Projektowanie newslettera",
+            "Optymalizacja czasu ładowania",
+            "Implementacja systemu rejestracji",
+            "Wdrożenie logiki koszyka",
+            "Analiza konkurencji",
+            "Testowanie aplikacji mobilnej",
+            "Szkolenie zespołu",
+            "Zarządzanie projektami",
+            "Aktualizacja systemu CRM",
+            "Optymalizacja SEO",
+            "Modernizacja interfejsu użytkownika",
+            "Integracja z płatnościami online",
+            "Wdrożenie protokołów bezpieczeństwa",
+            "Zarządzanie danymi",
+            "Projektowanie banerów reklamowych",
+            "Analiza danych sprzedażowych",
+            "Poprawa doświadczenia użytkownika",
+            "Usprawnienie logistyki",
+            "Planowanie budżetu",
+            "Rozwój aplikacji mobilnej",
+            "Monitorowanie serwera",
+            "Automatyzacja procesów",
+            "Testy obciążeniowe",
+            "Analiza ryzyka",
+            "Przygotowanie strategii marketingowej",
+            "Wdrożenie systemu ERP",
+            "Zarządzanie zasobami ludzkimi",
+            "Współpraca z partnerami biznesowymi",
+            "Usprawnienie obsługi klienta",
+            "Analiza trendów rynkowych",
+            "Rozwój funkcji e-commerce",
+            "Optymalizacja logiki biznesowej"
+        ]
+        # Jeśli lista ma mniej niż 50 pozycji, można zduplikować niektóre tytuły
+        while len(sample_tasks) < 50:
+            sample_tasks += sample_tasks  # proste powielenie w razie potrzeby
+
+        for i in range(50):
+            task_title = sample_tasks[i]
             priority = random.choice(priorities)
             status = random.choice(statuses)
-            # Ustalmy datę oddania jako dziś + losowa liczba dni (-5 do 10)
-            due_in_days = random.randint(-5, 10)
+            # Losowa data oddania: dziś + (od -5 do 20 dni)
+            due_in_days = random.randint(-5, 20)
             due_date = date.today() + timedelta(days=due_in_days)
-            # Wybieramy losowo grupę
-            group_name = random.choice(list(groups.keys()))
-            group = groups[group_name]
+            # Losujemy grupę spośród 8
+            group = random.choice(list(groups.values()))
             # Wybieramy losowo jednego z członków tej grupy
             group_members = list(group.members.all())
             assigned_node = random.choice(group_members)
+
+            # Tworzymy zadanie w Neo4j
             task = Task(
-                title=task_name,
-                description=f"Opis {task_name}",
-                priority=priority,
+                title=task_title,
+                description=f"Opis zadania: {task_title}",
+                priority=priority,      # "low", "medium", "high"
                 status=status,
                 due_date=due_date
             ).save()
+            # Podłączamy do wybranego użytkownika i grupy
             task.assigned_to.connect(assigned_node)
             group.tasks.connect(task)
-            self.stdout.write(f"Utworzono zadanie {task_name} w grupie {group_name} przypisane do {assigned_node.username}.")
+
+            self.stdout.write(
+                f"Utworzono zadanie '{task_title}' (priorytet={priority}) w grupie '{group.name}', przypisane do {assigned_node.username}."
+            )
 
         self.stdout.write("Seeding danych zakończony.")
