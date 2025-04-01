@@ -71,7 +71,7 @@ class Command(BaseCommand):
 
         # 3. Tworzymy 50 zadań z priorytetami kompatybilnymi z templatkami
         priorities = ["low", "medium", "high"]  # pasują do filtra priority_symbol/priority_color
-        statuses = ["oczekujące", "w trakcie", "zakończone"]
+        statuses = ["Oczekujące", "W trakcie", "Zakończone"]
         sample_tasks = [
             "Implementacja funkcji logowania",
             "Naprawa błędu płatności",

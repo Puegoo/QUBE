@@ -60,7 +60,7 @@
                     {{ task_group_mapping|dict_key:task.uid }}
                   </span>
                   <!-- Status zadania -->
-                  <span class="task-status {% if task.status == 'done' %}completed{% elif task.status == 'in-progress' %}in-progress{% else %}pending{% endif %}">
+                  <span class="task-status {% if task.get_status_display == 'Zakończone' %}completed{% elif task.get_status_display == 'W trakcie' %}in-progress{% else %}Oczekujące{% endif %}">
                     {{ task.get_status_display }}
                   </span>
                   <!-- Czas do końca (szaro, kursywą) -->

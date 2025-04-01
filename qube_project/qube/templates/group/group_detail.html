@@ -71,13 +71,13 @@
     <ul class="task-list">
       {% if is_leader %}
         {% for task in all_tasks %}
-          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.status }}" data-priority="{{ task.priority }}">
+          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.get_status_display }}" data-priority="{{ task.priority }}">
             <div class="task-tile" style="width: 100%;">
               <div class="task-tile-left" style="justify-content: flex-start;">
                 <span>{{ task.title }}</span>
               </div>
               <div class="task-tile-center">
-                {{ task.status }}
+                {{ task.get_status_display }}
               </div>
               <div class="task-tile-right" style="justify-content: flex-end;">
                 <a href="{% url 'edit_task' group.uid task.uid %}" class="icon-link" title="Edytuj zadanie">
@@ -91,13 +91,13 @@
         {% endfor %}
       {% else %}
         {% for task in user_tasks %}
-          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.status }}" data-priority="{{ task.priority }}">
+          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.get_status_display }}" data-priority="{{ task.priority }}">
             <div class="task-tile" style="width: 100%;">
               <div class="task-tile-left" style="justify-content: flex-start;">
                 <span>{{ task.title }}</span>
               </div>
               <div class="task-tile-center">
-                {{ task.status }}
+                {{ task.get_status_display }}
               </div>
               <div class="task-tile-right" style="justify-content: flex-end;">
                 <a href="{% url 'edit_task' group.uid task.uid %}" class="icon-link" title="Zmień status zadania">
@@ -133,7 +133,7 @@
                       &nbsp; {{ task.title }}
                     </div>
                     <div class="task-tile-center">
-                      {{ task.status }}
+                      {{ task.get_status_display }}
                     </div>
                     <div class="task-tile-right">
                       {% if task.due_date %}
@@ -238,9 +238,9 @@
       
       <label>Status</label>
       <select name="status">
-        <option value="pending">pending</option>
-        <option value="in-progress">in-progress</option>
-        <option value="done">done</option>
+        <option value="Oczekujące">Oczekujące</option>
+        <option value="W trakcie">W trakcie</option>
+        <option value="Zakończone">Zakończone</option>
       </select>
       
       <label>Opis</label>

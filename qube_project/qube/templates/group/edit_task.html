@@ -21,9 +21,9 @@
     
     <label>Status</label>
     <select name="status">
-      <option value="pending" {% if task.status == "pending" %}selected{% endif %}>Pending</option>
-      <option value="in-progress" {% if task.status == "in-progress" %}selected{% endif %}>In Progress</option>
-      <option value="done" {% if task.status == "done" %}selected{% endif %}>Done</option>
+      <option value="Oczekujące" {% if task.get_status_display == "Oczekujące" %}selected{% endif %}>Oczekujące</option>
+      <option value="W trakcie" {% if task.get_status_display == "W trakcie" %}selected{% endif %}>W trakcie</option>
+      <option value="Zakończone" {% if task.get_status_display == "Zakończone" %}selected{% endif %}>Zakończone</option>
     </select>
     
     <label>Data oddania</label>
