@@ -384,6 +384,12 @@ def edit_task_view(request, group_uid, task_uid):
         messages.error(request, "Brak uprawnień do edycji zadania.")
         return redirect('group_detail', group_uid=group.uid)
 
+    # Pobieramy przypisanego użytkownika przy pomocy metody single()
+    try:
+        assigned_user = task.assigned_to.single()
+    except Exception:
+        assigned_user = None
+
     if request.method == "POST":
         if is_leader:
             task.title = request.POST.get('title')
@@ -398,12 +404,12 @@ def edit_task_view(request, group_uid, task_uid):
                 task.due_date = None
 
             task.assigned_to.disconnect_all()
-            assigned_username = request.POST.get('assigned_user')
+            new_assigned_username = request.POST.get('assigned_user')
             try:
-                assigned_user = UserNode.nodes.get(username=assigned_username)
-                task.assigned_to.connect(assigned_user)
+                new_assigned_user = UserNode.nodes.get(username=new_assigned_username)
+                task.assigned_to.connect(new_assigned_user)
             except UserNode.DoesNotExist:
-                messages.warning(request, f"Użytkownik {assigned_username} nie istnieje.")
+                messages.warning(request, f"Użytkownik {new_assigned_username} nie istnieje.")
         task.description = request.POST.get('description')
         task.status = request.POST.get('status')
         task.save()
@@ -416,6 +422,7 @@ def edit_task_view(request, group_uid, task_uid):
             'group': group,
             'group_members': group_members,
             'is_leader': is_leader,
+            'assigned_user': assigned_user,  # przekazujemy przypisanego użytkownika
         }
         return render(request, 'group/edit_task.html', context)
 
