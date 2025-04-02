@@ -1,6 +1,7 @@
-# QUBE
-
-<img src="Docs/images/QUBE_banner.png" width="80%" alt="Baner">
+<h1 align="center">QUBE</h1>
+<div align="center">
+  <img src="Docs/images/QUBE_banner.png" width="80%" alt="Baner">
+</div>
 
 ## Spis treści
 1. [Wprowadzenie](#wprowadzenie)
@@ -108,59 +109,64 @@ Poniżej przedstawiono przykładową strukturę katalogu głównego projektu:
 - ℹ️ Usuwanie zakończonych zadań
 - ℹ️ Wyświetlanie szczegółów zadań w modalu
 - ℹ️ Poprawa wizualna kilku elementów
+- ℹ️ Przebudowa i rozszerzenie widoku ustawień 
 
 ## Galeria
 
-<figure>
-  <img src="Docs/images/dashboard.png" alt="dashboard" width="600">
-  <figcaption>dashboard.png</figcaption>
-</figure>
-
-<figure>
-  <img src="Docs/images/edycja_członka.png" alt="edycja_członka" width="600">
-  <figcaption>edycja_członka.png</figcaption>
-</figure>
-
-<figure>
-  <img src="Docs/images/edycja_zadan.png" alt="edycja_zadan" width="600">
-  <figcaption>edycja_zadan.png</figcaption>
-</figure>
-
-<figure>
-  <img src="Docs/images/logowanie.png" alt="logowanie" width="600">
-  <figcaption>logowanie.png</figcaption>
-</figure>
-
-<figure>
+<figure align="center">
   <img src="Docs/images/main.png" alt="main" width="600">
-  <figcaption>main.png</figcaption>
+  <figcaption><small><em>Strona główna</em></small></figcaption>
 </figure>
 
-<figure>
-  <img src="Docs/images/potw_usun.png" alt="potw_usun" width="600">
-  <figcaption>potw_usun.png</figcaption>
+<figure align="center">
+  <img src="Docs/images/logowanie.png" alt="logowanie" width="600">
+  <figcaption><small><em>Widok logowania</em></small></figcaption>
 </figure>
 
-<figure>
+<figure align="center">
   <img src="Docs/images/rejestracja.png" alt="rejestracja" width="600">
-  <figcaption>rejestracja.png</figcaption>
+  <figcaption><small><em>Widok rejestracji</em></small></figcaption>
 </figure>
 
-<figure>
-  <img src="Docs/images/szczeg_grupy.png" alt="szczeg_grupy" width="600">
-  <figcaption>szczeg_grupy.png</figcaption>
+<figure align="center">
+  <img src="Docs/images/dashboard.png" alt="dashboard" width="600">
+  <figcaption><small><em>Widok strony głównej użytkownika</em></small></figcaption>
 </figure>
 
-<figure>
+<figure align="center">
   <img src="Docs/images/tworzenie_grupy.png" alt="tworzenie_grupy" width="600">
-  <figcaption>tworzenie_grupy.png</figcaption>
+  <figcaption><small><em>Widok tworzenia grupy</em></small></figcaption>
 </figure>
 
-<figure>
+<figure align="center">
   <img src="Docs/images/ustawienia.png" alt="ustawienia" width="600">
-  <figcaption>ustawienia.png</figcaption>
+  <figcaption><small><em>Widok ustawień</em></small></figcaption>
 </figure>
 
+<figure align="center">
+  <img src="Docs/images/szczeg_grupy.png" alt="szczeg_grupy" width="600">
+  <figcaption><small><em>Widok grupy (jako członek)</em></small></figcaption>
+</figure>
+
+<figure align="center">
+  <img src="Docs/images/szeg_grupy_lider.png" alt="szczeg_grupy_lider" width="600">
+  <figcaption><small><em>Widok grupy (jako lider)</em></small></figcaption>
+</figure>
+
+<figure align="center">
+  <img src="Docs/images/edycja_członka.png" alt="edycja_członka" width="600">
+  <figcaption><small><em>Widok edycji członka</em></small></figcaption>
+</figure>
+
+<figure align="center">
+  <img src="Docs/images/edycja_zadan.png" alt="edycja_zadan" width="600">
+  <figcaption><small><em>Widok edycji zadania</em></small></figcaption>
+</figure>
+
+<figure align="center">
+  <img src="Docs/images/potw_usun.png" alt="potw_usun" width="600">
+  <figcaption><small><em>Komunikat przy usuwaniu członka z grupy</em></small></figcaption>
+</figure>
 
 ## Autorzy
 
