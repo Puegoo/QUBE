@@ -7,8 +7,8 @@
 2. [Instalacja](#instalacja)
 3. [Struktura projektu](#struktura-projektu)
 4. [Funkcjonalności](#funkcjonalności)
-5. [Galeria](#galeria)
-6. [Przyszły rozwój](#przyszły-rozwój)
+5. [Przyszły rozwój](#przyszły-rozwój)
+6. [Galeria](#galeria)
 7. [Autorzy](#autorzy)
 
 ## Wprowadzenie
@@ -101,6 +101,14 @@ Poniżej przedstawiono przykładową strukturę katalogu głównego projektu:
 **Konto:**
 - ✅ Edycja danych konta
 
+## Przyszły rozwój
+
+- ℹ️ Zależność zadań
+- ℹ️ Przydzielanie zadań kilku członkom grupy
+- ℹ️ Usuwanie zakończonych zadań
+- ℹ️ Wyświetlanie szczegółów zadań w modalu
+- ℹ️ Poprawa wizualna kilku elementów
+
 ## Galeria
 
 <figure>
@@ -153,13 +161,6 @@ Poniżej przedstawiono przykładową strukturę katalogu głównego projektu:
   <figcaption>ustawienia.png</figcaption>
 </figure>
 
-## Przyszły rozwój
-
-- ℹ️ Zależność zadań
-- ℹ️ Przydzielanie zadań kilku członkom grupy
-- ℹ️ Usuwanie zakończonych zadań
-- ℹ️ Wyświetlanie szczegółów zadań w modalu
-- ℹ️ Poprawa wizualna kilku elementów
 
 ## Autorzy
 
