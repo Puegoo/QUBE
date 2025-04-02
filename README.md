@@ -7,7 +7,7 @@
 
 <img src="qube_project/qube/static/images/QUBE_LOGO.png" alt="QUBE Logo" align="right" width="250" height="250" />
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada. Nullam imperdiet nisi sed purus ullamcorper, non rutrum purus fermentum.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada. Nullam imperdiet nisi sed purus ullamcorper, non rutrum purus fermentum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada. Nullam imperdiet nisi sed purus ullamcorper, non rutrum purus fermentum.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada. Nullam imperdiet nisi sed purus ullamcorper, non rutrum purus fermentum.
 
 ## Instalacja
 
