@@ -5,14 +5,9 @@
 
 ## Wprowadzenie
 
-<div style="display:flex; align-items:center; justify-content:space-between;">
-  <div style="flex:1; padding-right:24px;">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada.</p>
-  </div>
-  <div>
-    <img src="qube_project/qube/static/images/QUBE_LOGO.png" alt="QUBE Logo" width="200">
-  </div>
-</div>
+<img src="qube_project/qube/static/images/QUBE_LOGO.png" alt="QUBE Logo" align="right" width="250" height="250" />
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada. Nullam imperdiet nisi sed purus ullamcorper, non rutrum purus fermentum.
 
 ## Instalacja
 
