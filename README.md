@@ -1,6 +1,6 @@
 # QUBE
 
-<img src="Docs/images/QUBE_banner.png" width="80vh" alt="Baner">
+<img src="Docs/images/QUBE_banner.png" width="80%" alt="Baner">
 
 ## Spis treści
 1. [Wprowadzenie](#wprowadzenie)
