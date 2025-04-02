@@ -1,21 +1,18 @@
 <h1 align="center">QUBE</h1>
 <div align="center">
-  <img src="Docs/images/QUBE_banner.png" width="80%" alt="Baner" style="border-radius:8px;">
+  <img src="Docs/images/QUBE_banner.png" width="80%" alt="Baner">
 </div>
-
-## Spis treści
-1. [Wprowadzenie](#wprowadzenie)
-2. [Instalacja](#instalacja)
-3. [Struktura projektu](#struktura-projektu)
-4. [Funkcjonalności](#funkcjonalności)
-5. [Przyszły rozwój](#przyszły-rozwój)
-6. [Galeria](#galeria)
-7. [Autorzy](#autorzy)
 
 ## Wprowadzenie
 
-...
-
+<div style="display:flex; align-items:center; justify-content:space-between;">
+  <div style="flex:1; padding-right:24px;">
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum. Cras venenatis euismod malesuada.</p>
+  </div>
+  <div>
+    <img src="qube_project/qube/static/images/QUBE_LOGO.png" alt="QUBE Logo" width="200">
+  </div>
+</div>
 
 ## Instalacja
 
