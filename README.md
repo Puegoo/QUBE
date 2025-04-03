@@ -1,6 +1,6 @@
 <h1 align="center">QUBE</h1>
 <div align="center">
-  <img src="Docs/images/QUBE_banner.png" width="80%" alt="Baner">
+  <img src="Docs/images/QUBE_banner.png" width="100%" alt="Baner">
 </div>
 
 ## Wprowadzenie
