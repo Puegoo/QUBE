@@ -104,7 +104,7 @@ Poniżej przedstawiono przykładową strukturę katalogu głównego projektu:
 - ℹ️ Przebudowa i rozszerzenie widoku ustawień 
 
 ## Galeria
-<div styles="display: block; margin: auto; align=center">
+<div styles="display: block; margin: auto; alig">
   <div style="text-align:center; margin-bottom:24px;">
     <div style="font-size:12px; font-style:italic; margin-top:4px;">Strona główna</div>
     <img src="Docs/images/main.png" alt="main" width="600">
