@@ -106,58 +106,58 @@ Poniżej przedstawiono przykładową strukturę katalogu głównego projektu:
 ## Galeria
 
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/main.png" alt="main" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Strona główna</div>
+  <img src="Docs/images/main.png" alt="main" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/logowanie.png" alt="logowanie" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok logowania</div>
+  <img src="Docs/images/logowanie.png" alt="logowanie" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/rejestracja.png" alt="rejestracja" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok rejestracji</div>
+  <img src="Docs/images/rejestracja.png" alt="rejestracja" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/dashboard.png" alt="dashboard" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok strony głównej użytkownika</div>
+  <img src="Docs/images/dashboard.png" alt="dashboard" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/tworzenie_grupy.png" alt="tworzenie_grupy" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok tworzenia grupy</div>
+  <img src="Docs/images/tworzenie_grupy.png" alt="tworzenie_grupy" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/ustawienia.png" alt="ustawienia" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok ustawień</div>
+  <img src="Docs/images/ustawienia.png" alt="ustawienia" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/szczeg_grupy.png" alt="szczeg_grupy" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok grupy (jako członek)</div>
+  <img src="Docs/images/szczeg_grupy.png" alt="szczeg_grupy" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/szeg_grupy_lider.png" alt="szczeg_grupy_lider" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok grupy (jako lider)</div>
+  <img src="Docs/images/szeg_grupy_lider.png" alt="szczeg_grupy_lider" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/edycja_członka.png" alt="edycja_członka" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok edycji członka</div>
+  <img src="Docs/images/edycja_członka.png" alt="edycja_członka" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/edycja_zadan.png" alt="edycja_zadan" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Widok edycji zadania</div>
+  <img src="Docs/images/edycja_zadan.png" alt="edycja_zadan" width="600">
 </div>
-
+&nbsp;&nbsp;
 <div style="text-align:center; margin-bottom:24px;">
-  <img src="Docs/images/potw_usun.png" alt="potw_usun" width="600">
   <div style="font-size:12px; font-style:italic; margin-top:4px;">Komunikat przy usuwaniu członka z grupy</div>
+  <img src="Docs/images/potw_usun.png" alt="potw_usun" width="600">
 </div>
 
 ## Autorzy
