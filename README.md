@@ -3,6 +3,15 @@
   <img src="Docs/images/QUBE_banner.png" width="100%" alt="Baner">
 </div>
 
+## Spis treści
+1. [Wprowadzenie](#wprowadzenie)
+2. [Instalacja](#instalacja)
+3. [Struktura projektu](#struktura-projektu)
+4. [Funkcjonalności](#funkcjonalności)
+5. [Przyszły rozwój](#przyszły-rozwój)
+6. [Galeria](#galeria)
+7. [Autorzy](#autorzy)
+
 ## Wprowadzenie
 
 <img src="qube_project/qube/static/images/QUBE_LOGO.png" alt="QUBE Logo" align="right" width="200" height="200" />
