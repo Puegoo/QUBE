@@ -1335,3 +1335,37 @@ footer {
   }
 }
 
+hr {
+  border: 0;
+  height: 1px;
+  background-color: #ddd;
+}
+
+.messages {
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.message {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.message.error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.message.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.helptext {
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+  margin-top: -5px;
+  margin-bottom: 10px;
+}

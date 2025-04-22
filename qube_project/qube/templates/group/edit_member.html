@@ -2,45 +2,51 @@
 {% load static %}
 {% block content %}
 <div class="form-container">
+  <!-- Member edit form header with dynamic username display -->
   <h2>Edycja członka: <span id="memberUsername">{{ member.username }}</span></h2>
+  
+  <!-- Main form for updating member role -->
   <form method="POST" id="editMemberForm">
     {% csrf_token %}
     
     <label>Rola (wpisz, aby zaktualizować)</label>
     <input type="text" name="role" value="{{ current_role }}" placeholder="Wpisz rolę">
     
-    <!-- Przyciski akcji: Zapisz -->
+    <!-- Primary action button for saving role changes -->
     <div class="modal-footer">
       <button type="submit" class="btn">Zapisz</button>
     </div>
     
-    <!-- Przyciski akcji: Usuń członka (umieszczony poniżej) -->
+    <!-- Secondary action button for member removal -->
     <div class="modal-footer">
       <button type="button" class="btn cancel-btn" id="deleteMemberBtn" onclick="openDeleteConfirmModal()">Usuń członka</button>
     </div>
     
-    <!-- Ukryte pola do akcji usunięcia -->
+    <!-- Hidden fields used for delete operations -->
+    <!-- These are populated by JavaScript when the user confirms deletion -->
     <input type="hidden" name="delete" id="deleteInput" value="0">
     <input type="hidden" name="delete_tasks" id="deleteTasksInput" value="0">
   </form>
 </div>
 
-<!-- Modal potwierdzenia usunięcia -->
+<!-- Confirmation modal for member deletion -->
 <div id="deleteConfirmModal" class="modal">
   <div class="modal-content form-container">
     <h4>Potwierdzenie usunięcia</h4>
     <p>Czy na pewno chcesz usunąć członka <strong>{{ member.username }}</strong> z grupy?</p>
     
-    <!-- Dodajemy sekcję potwierdzającą wpisanie nazwy użytkownika -->
+    <!-- Username verification field for confirmation -->
+    <!-- Adds an extra layer of protection against accidental deletions -->
     <label style="display:block; margin:10px 0;">Wpisz nazwę użytkownika, aby potwierdzić:</label>
     <input type="text" id="confirmUsername" placeholder="Wpisz nazwę użytkownika">
     
-    <!-- Checkbox do usunięcia zadań przypisanych do członka -->
+    <!-- Option to also delete associated tasks -->
     <label style="display:block; margin:10px 0;">
       <input type="checkbox" id="deleteTasksCheckbox" name="delete_tasks" value="1">
       Usuń również wszystkie zadania przypisane do tego członka w grupie
     </label>
     
+    <!-- Modal action buttons -->
     <div class="modal-footer">
       <button type="button" class="btn" id="confirmDeleteBtn" onclick="confirmDeleteMember()">Tak, usuń</button>
       <button type="button" class="btn cancel-btn" id="cancelDeleteBtn" onclick="closeDeleteConfirmModal()">Anuluj</button>

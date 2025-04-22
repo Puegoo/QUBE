@@ -3,88 +3,101 @@
 {% load arithmetic %}
 {% load dict_extras %}
 {% block content %}
+  <!-- Dashboard header with personalized welcome message -->
   <div class="dashboard-header">
     <h2>Witaj, {{ user.username }}</h2>
   </div>
+  
+  <!-- Main dashboard content with two-column layout -->
   <div class="dashboard-container">
-      <!-- Lewa sekcja: Grupy -->
-      <div class="dashboard-sidebar">
-        <h2>Twoje grupy</h2>
-        {% if user_groups or user_created_groups %}
-          <ul class="group-list">
-            {% for group in user_groups %}
+    <!-- LEFT COLUMN: Groups the user belongs to or leads -->
+    <div class="dashboard-sidebar">
+      <h2>Twoje grupy</h2>
+      {% if user_groups or user_created_groups %}
+        <ul class="group-list">
+          <!-- First display groups where user is a member -->
+          {% for group in user_groups %}
+            <li class="group-item">
+              <a href="{% url 'group_detail' group.uid %}" class="group-link">{{ group.name }}</a>
+              <!-- Display leader icon for groups where user is the leader -->
+              {% if group in user_created_groups %}
+                <span class="leader-icon">
+                  <img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px">
+                </span>
+              {% endif %}
+            </li>
+          {% endfor %}
+          
+          <!-- Then display any additional groups where user is only a leader (not in user_groups) -->
+          {% for group in user_created_groups %}
+            {% if group not in user_groups %}
               <li class="group-item">
                 <a href="{% url 'group_detail' group.uid %}" class="group-link">{{ group.name }}</a>
-                {% if group in user_created_groups %}
-                  <span class="leader-icon">
-                    <img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px">
-                  </span>
-                {% endif %}
+                <span class="leader-icon">
+                  <img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px">
+                </span>
               </li>
-            {% endfor %}
-            {% for group in user_created_groups %}
-              {% if group not in user_groups %}
-                <li class="group-item">
-                  <a href="{% url 'group_detail' group.uid %}" class="group-link">{{ group.name }}</a>
-                  <span class="leader-icon">
-                    <img src="{% static 'icons/leader.svg' %}" alt="Lider" height="20px">
-                  </span>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p class="empty-text">Nie należysz do żadnej grupy.</p>
-        {% endif %}
-      </div>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <!-- Message displayed when user has no groups -->
+        <p class="empty-text">Nie należysz do żadnej grupy.</p>
+      {% endif %}
+    </div>
 
-      <!-- Prawa sekcja: Zadania -->
-      <div class="dashboard-main">
-          <h2>Twoje zadania</h2>
-          {% if user_tasks %}
-            <ul class="task-list">
-              {% for task in user_tasks %}
-                <li class="task-item">
-                  <!-- Priorytet -->
-                  <span class="task-priority">
-                    <span class="priority-icon" style="color: {{ task.priority|priority_color }};">
-                      {{ task.priority|priority_symbol }}
-                    </span>
-                  </span>
-                  <!-- Nazwa zadania (pogrubiona) -->
-                  <span class="task-title">
-                    <strong>{{ task.title }}</strong>
-                  </span>
-                  <!-- Grupa, w której jest zadanie (wyświetlamy z task_group_mapping) -->
-                  <span class="task-group">
-                    {{ task_group_mapping|dict_key:task.uid }}
-                  </span>
-                  <!-- Status zadania -->
-                  <span class="task-status {% if task.get_status_display == 'Zakończone' %}completed{% elif task.get_status_display == 'W trakcie' %}in-progress{% else %}Oczekujące{% endif %}">
-                    {{ task.get_status_display }}
-                  </span>
-                  <!-- Czas do końca (szaro, kursywą) -->
-                  <span class="task-deadline" style="color: gray; font-style: italic;">
-                    {% if task.due_date %}
-                      {% if task.days_left != None %}
-                        {% if task.days_left >= 0 %}
-                          Za {{ task.days_left }} dni
-                        {% else %}
-                          Po terminie
-                        {% endif %}
-                      {% else %}
-                        brak terminu
-                      {% endif %}
+    <!-- RIGHT COLUMN: Tasks assigned to the user -->
+    <div class="dashboard-main">
+      <h2>Twoje zadania</h2>
+      {% if user_tasks %}
+        <ul class="task-list">
+          {% for task in user_tasks %}
+            <li class="task-item">
+              <!-- Task priority indicator with color coding -->
+              <span class="task-priority">
+                <span class="priority-icon" style="color: {{ task.priority|priority_color }};">
+                  {{ task.priority|priority_symbol }}
+                </span>
+              </span>
+              
+              <!-- Task title - bold to emphasize -->
+              <span class="task-title">
+                <strong>{{ task.title }}</strong>
+              </span>
+              
+              <!-- Group name that this task belongs to -->
+              <span class="task-group">
+                {{ task_group_mapping|dict_key:task.uid }}
+              </span>
+              
+              <!-- Task status with conditional CSS classes for styling -->
+              <span class="task-status {% if task.get_status_display == 'Zakończone' %}completed{% elif task.get_status_display == 'W trakcie' %}in-progress{% else %}Oczekujące{% endif %}">
+                {{ task.get_status_display }}
+              </span>
+              
+              <!-- Due date countdown with conditional formatting -->
+              <span class="task-deadline" style="color: gray; font-style: italic;">
+                {% if task.due_date %}
+                  {% if task.days_left != None %}
+                    {% if task.days_left >= 0 %}
+                      Za {{ task.days_left }} dni
                     {% else %}
-                      brak terminu
+                      Po terminie
                     {% endif %}
-                  </span>
-                </li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            <p class="empty-text">Nie masz przypisanych zadań.</p>
-          {% endif %}
-      </div>
+                  {% else %}
+                    brak terminu
+                  {% endif %}
+                {% else %}
+                  brak terminu
+                {% endif %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <!-- Message displayed when user has no tasks -->
+        <p class="empty-text">Nie masz przypisanych zadań.</p>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}

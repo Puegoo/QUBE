@@ -1,21 +1,60 @@
 {% extends 'master.html' %}
+{% load static %}
 {% block content %}
 <div class="form-container">
     <h2>Ustawienia konta</h2>
     
-    <form method="POST">
+    <!-- Profile information form -->
+    <form method="POST" action="{% url 'settings' %}">
         {% csrf_token %}
+        <input type="hidden" name="update_profile" value="1">
+        
         <fieldset>
             <legend>Zmiana danych użytkownika</legend>
-            {{ user_form.as_p }}
+            
+            <label for="id_username">Nazwa użytkownika</label>
+            <input type="text" name="username" value="{{ user.username }}" id="id_username" class="form-control" readonly>
+            <p class="helptext">Nazwa użytkownika nie może być zmieniona.</p>
+            
+            <label for="id_email">Email</label>
+            <input type="email" name="email" value="{{ user_form.email.value|default:'' }}" id="id_email" class="form-control" required>
         </fieldset>
+        
+        <button type="submit" class="btn">💾 Aktualizuj dane</button>
+    </form>
+    
+    <hr style="margin: 30px 0;">
+    
+    <!-- Password change form -->
+    <form method="POST" action="{% url 'settings' %}">
+        {% csrf_token %}
+        <input type="hidden" name="change_password" value="1">
         
         <fieldset>
             <legend>Zmiana hasła</legend>
-            {{ password_form.as_p }}
+            
+            <label for="id_old_password">Aktualne hasło</label>
+            <input type="password" name="old_password" id="id_old_password" class="form-control" required>
+            
+            <label for="id_new_password1">Nowe hasło</label>
+            <input type="password" name="new_password1" id="id_new_password1" class="form-control" required>
+            
+            <label for="id_new_password2">Powtórz nowe hasło</label>
+            <input type="password" name="new_password2" id="id_new_password2" class="form-control" required>
         </fieldset>
         
-        <button type="submit" class="btn">💾 Zapisz zmiany</button>
+        <button type="submit" class="btn">🔒 Zmień hasło</button>
     </form>
+    
+    <!-- Display any messages from the backend -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

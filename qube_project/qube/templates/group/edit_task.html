@@ -2,8 +2,10 @@
 {% load static %}
 {% block content %}
 <div class="form-container wide-modal">
+  <!-- Header container with task title and delete button (for leaders) -->
   <div class="task-header-container">
     {% if is_leader %}
+    <!-- Task deletion form with confirmation dialog -->
     <form method="POST" action="{% url 'delete_task' group.uid task.uid %}" onsubmit="return confirm('Czy na pewno chcesz usunąć to zadanie?');" class="delete-task-form">
       {% csrf_token %}
       <button type="submit" class="filter-btn delete-task-btn" title="Usuń zadanie">
@@ -15,18 +17,24 @@
     <h2>Edycja zadania</h2>
   </div>
   
+  <!-- Task edit form -->
   <form method="POST">
     {% csrf_token %}
     
+    <!-- Two-column layout for task properties -->
     <div class="form-columns">
+      <!-- Left column: Basic task information -->
       <div class="form-column">
         <label>Nazwa zadania</label>
+        <!-- Task title field - only editable by group leaders -->
         <input type="text" name="title" value="{{ task.title }}" required {% if not is_leader %}disabled{% endif %}>
         
         <label>Opis</label>
+        <!-- Task description - editable by all users -->
         <textarea name="description" required>{{ task.description }}</textarea>
         
         <label>Priorytet</label>
+        <!-- Priority selection - only editable by group leaders -->
         <select name="priority" {% if not is_leader %}disabled{% endif %}>
           <option value="low" {% if task.priority == "low" %}selected{% endif %}>Niski</option>
           <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Średni</option>
@@ -34,21 +42,26 @@
         </select>
         
         <label>Status</label>
+        <!-- Status selection - disabled if task is blocked by dependencies -->
         <select name="status" {% if task.is_blocked %}disabled{% endif %} class="{% if task.is_blocked %}blocked-select{% endif %}">
           <option value="Oczekujące" {% if task.get_status_display == "Oczekujące" %}selected{% endif %}>Oczekujące</option>
           <option value="W trakcie" {% if task.get_status_display == "W trakcie" %}selected{% endif %}>W trakcie</option>
           <option value="Zakończone" {% if task.get_status_display == "Zakończone" %}selected{% endif %}>Zakończone</option>
         </select>
+        <!-- Warning message for blocked tasks -->
         {% if task.is_blocked %}
         <p class="warning-text">To zadanie jest zablokowane przez niezakończone zadania zależne.</p>
         {% endif %}
         
         <label>Data oddania</label>
+        <!-- Due date field - only editable by group leaders -->
         <input type="date" name="due_date" value="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% endif %}" {% if not is_leader %}disabled{% endif %}>
       </div>
       
+      <!-- Right column: Assignments and dependencies -->
       <div class="form-column">
         <label>Przydziel do</label>
+        <!-- Multi-select user assignment - only editable by group leaders -->
         <select name="assigned_user" multiple class="multi-select" size="6" {% if not is_leader %}disabled{% endif %}>
           {% for member in group_members %}
             <option value="{{ member.username }}" 
@@ -62,6 +75,7 @@
         <p class="select-help">Przytrzymaj Ctrl (Windows) lub Cmd (Mac), aby wybrać wiele osób</p>
         
         {% if is_leader %}
+        <!-- Dependency management - only visible to group leaders -->
         <label>Zależne od zadań</label>
         <select name="dependency_tasks" multiple class="multi-select" size="6">
           {% for other_task in all_tasks %}
@@ -75,6 +89,7 @@
         </select>
         <p class="select-help">To zadanie będzie zablokowane, dopóki zadania zależne nie zostaną zakończone</p>
         {% else %}
+          <!-- Read-only dependency list for non-leaders -->
           {% if dependencies %}
           <label>Zadanie zależne od:</label>
           <div class="dependencies-list">
@@ -93,6 +108,7 @@
       </div>
     </div>
     
+    <!-- Form action buttons -->
     <div class="modal-footer">
       <button type="submit" class="btn">Zapisz</button>
       <a href="{% url 'group_detail' group.uid %}" class="btn cancel-btn">Anuluj</a>

@@ -1,6 +1,7 @@
 {% load static %}
 
 <script>
+    // Store the current group's unique identifier for JavaScript interactions
     var currentGroupUid = "{{ group.uid }}";
 </script>
 
@@ -9,23 +10,26 @@
 <head>
     <meta charset="UTF-8">
     <title>QUBE</title>
+    <!-- Link to the main stylesheet -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
     <header>
         <nav class="navbar">
-            <!-- Dynamiczny link do home lub dashboard -->
+            <!-- Dynamic navigation link that changes based on authentication status -->
             <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}" class="nav-title">QUBE</a>
 
-            <!-- Linki dostępne tylko po zalogowaniu -->
+            <!-- Conditional navigation links based on authentication status -->
             {% if user.is_authenticated %}
             <div class="nav-links">
+                <!-- Navigation options for authenticated users -->
                 <a href="{% url 'create_group' %}" class="nav-link">➕ Nowa grupa</a>
                 <a href="{% url 'settings' %}" class="nav-link">⚙️ Ustawienia</a>
                 <a href="{% url 'logout' %}" class="nav-link logout">Wyloguj</a>
             </div>
             {% else %}
             <div class="nav-links">
+                <!-- Authentication options for anonymous users -->
                 <a href="{% url 'login' %}" class="nav-link">Zaloguj</a>
                 <a href="{% url 'register' %}" class="nav-link">Rejestracja</a>
             </div>
@@ -34,6 +38,7 @@
     </header>
 
     <main>
+        <!-- Content placeholder for child templates -->
         {% block content %}
         {% endblock %}
     </main>
@@ -41,6 +46,7 @@
     <footer>
         <p>&copy; 2025 QUBE. Wszystkie prawa zastrzeżone.</p>
     </footer>
+    <!-- Include the main JavaScript file -->
     <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>

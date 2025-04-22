@@ -99,15 +99,15 @@ Poniżej przedstawiono przykładową strukturę katalogu głównego projektu:
 **Zadania:**
 - ✅ Dodawanie i modyfikacja zadań w grupie
 - ✅ Przeglądanie zadań
+- ✅ Zależność zadań
+- ✅ Przydzielanie zadań kilku członkom grupy
+- ✅ Usuwanie zakończonych zadań
 
 **Konto:**
 - ✅ Edycja danych konta
 
 ## Przyszły rozwój
 
-- ℹ️ Zależność zadań
-- ℹ️ Przydzielanie zadań kilku członkom grupy
-- ℹ️ Usuwanie zakończonych zadań
 - ℹ️ Wyświetlanie szczegółów zadań w modalu
 - ℹ️ Poprawa wizualna kilku elementów
 - ℹ️ Przebudowa i rozszerzenie widoku ustawień 

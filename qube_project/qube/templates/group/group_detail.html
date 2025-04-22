@@ -4,14 +4,16 @@
 {% load arithmetic %}
 
 <script>
+  // Store the current group's unique identifier for JavaScript operations
   var currentGroupUid = "{{ group.uid }}";
 </script>
 
 {% block content %}
 
-<!-- Nagłówek grupy -->
+<!-- Group Header Section - Contains group name and action buttons -->
 <div class="group-header">
   <div class="group-header-left">
+    <!-- Group name with editable functionality for group leaders -->
     <h2 id="groupNameDisplay">{{ group.name }}</h2>
     {% if is_leader %}
     <button id="editGroupNameButton" onclick="openEditGroupNameModal()" title="Edytuj nazwę grupy" style="background:none; border:none; cursor:pointer;">
@@ -19,14 +21,16 @@
     </button>
     {% endif %}
   </div>
+  
   {% if is_leader %}
+  <!-- Action buttons only available to group leaders -->
   <div class="group-header-right">
     <div class="group-actions">
-      <!-- Przycisk dodawania zadania -->
+      <!-- Task creation button -->
       <button type="button" class="filter-btn" onclick="openAddTaskModal()" title="Dodaj zadanie">
         <img src="{% static 'icons/add_task.svg' %}" alt="Dodaj zadanie" class="filter-icon">
       </button>
-      <!-- Przycisk dodawania członka -->
+      <!-- Member addition button -->
       <button type="button" class="filter-btn" onclick="openAddMemberModal()" title="Dodaj członka">
         <img src="{% static 'icons/add_member.svg' %}" alt="Dodaj członka" class="filter-icon">
       </button>
@@ -34,7 +38,7 @@
   
     <div class="vertical-divider"></div>
   
-    <!-- Formularz usuwania grupy -->
+    <!-- Group deletion form with confirmation -->
     <form method="POST" action="{% url 'delete_group' group.uid %}" class="remove-group-form" 
           onsubmit="return confirm('Czy na pewno chcesz usunąć tę grupę?');">
       {% csrf_token %}
@@ -46,16 +50,21 @@
   {% endif %}
 </div>
 
+<!-- Main content container with three-column layout -->
 <div class="group-detail-container">
-  <!-- LEWA KOLUMNA – Zadania -->
+  <!-- LEFT COLUMN - Tasks List -->
   <div class="group-detail-left">
+    <!-- Dynamic heading based on user role -->
     {% if is_leader %}
       <h3>Zadania w grupie</h3>
     {% else %}
       <h3>Twoje zadania</h3>
     {% endif %}
+    
+    <!-- Task filtering and sorting controls -->
     <div class="filter-buttons">
       <div class="filter-group">
+        <!-- Filter buttons for different task attributes -->
         <button type="button" class="filter-btn" data-filter="due_date" onclick="setTaskFilter('due_date')">
           <img src="{% static 'icons/data.svg' %}" alt="Data" class="filter-icon">
         </button>
@@ -68,18 +77,21 @@
         <button type="button" class="filter-btn" data-filter="blocked" onclick="setTaskFilter('blocked')">
           <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="filter-icon">
         </button>
+        <!-- Sort order toggle button -->
         <button type="button" class="sort-btn" onclick="toggleTaskSortOrder()">
           <img src="{% static 'icons/ascending.svg' %}" alt="Sortuj rosnąco" class="sort-icon" id="taskSortIcon">
         </button>
       </div>
 
+      <!-- Completed tasks management button (leaders only) -->
       {% if is_leader %}
       <button type="button" class="filter-btn completed-tasks-btn" onclick="openCompletedTasksModal()" title="Zarządzaj ukończonymi zadaniami">
         <img src="{% static 'icons/completed.svg' %}" alt="Ukończone zadania" class="filter-icon">
       </button>
       {% endif %}
     </div>
-    <!-- Część z zadaniami w widoku grup -->
+    
+    <!-- Tasks list - displays all or user-specific tasks based on role -->
     <ul class="task-list">
       {% if is_leader %}
         {% for task in all_tasks %}
@@ -87,6 +99,7 @@
             <div class="task-tile {% if task.is_blocked %}task-blocked{% endif %}" style="width: 100%;">
               <div class="task-tile-left" style="justify-content: flex-start;">
                 <span>{{ task.title }}</span>
+                <!-- Blocked task indicator -->
                 {% if task.is_blocked %}
                 <span class="blocked-indicator" title="Zadanie zablokowane przez niezakończone zadania zależne">
                   <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="lock-icon">
@@ -112,6 +125,7 @@
             <div class="task-tile {% if task.is_blocked %}task-blocked{% endif %}" style="width: 100%;">
               <div class="task-tile-left" style="justify-content: flex-start;">
                 <span>{{ task.title }}</span>
+                <!-- Blocked task indicator -->
                 {% if task.is_blocked %}
                 <span class="blocked-indicator" title="Zadanie zablokowane przez niezakończone zadania zależne">
                   <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="lock-icon">
@@ -133,26 +147,29 @@
         {% endfor %}
       {% endif %}
     </ul>
-    <!-- Usunięto przycisk "Dodaj zadanie" z lewej kolumny -->
   </div>
 
-  <!-- ŚRODKOWA KOLUMNA – Lista członków i ich zadania (kafelki) -->
+  <!-- MIDDLE COLUMN - Members and their tasks overview -->
   <div class="group-detail-middle">
     <h3>Lista członków i ich zadania</h3>
     <ul class="member-tasks-list">
       {% for member in group_members %}
         <li>
+          <!-- Member name header -->
           <strong>{{ member.username }}</strong>
+          <!-- Nested list of this member's tasks -->
           <ul style="list-style: none; margin: 0; padding: 0;">
             {% if member.username in member_tasks %}
               {% for task in member_tasks|dict_key:member.username %}
                 <li style="border: none; margin: 0; padding: 0;">
                   <div class="task-tile {% if task.is_blocked %}task-blocked{% endif %}" style="width: 100%;">
                     <div class="task-tile-left">
+                      <!-- Task priority indicator with color -->
                       <span class="priority-icon" style="color: {{ task.priority|priority_color }};">
                         {{ task.priority|priority_symbol }}
                       </span>
                       &nbsp; {{ task.title }}
+                      <!-- Blocked task indicator -->
                       {% if task.is_blocked %}
                       <span class="blocked-indicator" title="Zadanie zablokowane przez niezakończone zadania zależne">
                         <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="lock-icon">
@@ -163,6 +180,7 @@
                       {{ task.get_status_display }}
                     </div>
                     <div class="task-tile-right">
+                      <!-- Due date display with conditional formatting -->
                       {% if task.due_date %}
                         {% if task.days_left != None %}
                           {% if task.days_left >= 0 %}
@@ -191,59 +209,60 @@
     </ul>
   </div>
 
-<!-- PRAWA KOLUMNA – Członkowie grupy (z rolami) -->
-<div class="group-detail-right">
-  <h3>Członkowie grupy</h3>
-  <ul class="member-list">
-    <!-- Lider - wyświetlony na samej górze -->
-    <li class="leader-item">
-      <div class="member-tile leader-tile">
-        <div class="member-tile-left">{{ leader.username }}</div>
-        <div class="member-tile-center">Lider</div>
-        <div class="member-tile-right">
-          <!-- Brak przycisku edycji dla lidera -->
-        </div>
-      </div>
-    </li>
-    <!-- Oddzielenie lidera od reszty -->
-    <hr class="leader-separator">
-    <!-- Pozostali członkowie -->
-    {% for member in group_members %}
-      {% if member.username != leader.username %}
-        <li>
-          <div class="member-tile">
-            <div class="member-tile-left">
-              {{ member.username }}
-            </div>
-            <div class="member-tile-center">
-              {% if member.username in member_roles %}
-                {{ member_roles|dict_key:member.username }}
-              {% else %}
-                Brak roli
-              {% endif %}
-            </div>
-            <div class="member-tile-right">
-              {% if is_leader %}
-                <a href="{% url 'edit_member' group.uid member.username %}" class="icon-link" title="Modyfikuj członka">
-                  <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
-                </a>
-              {% endif %}
-            </div>
+  <!-- RIGHT COLUMN - Group members list with roles -->
+  <div class="group-detail-right">
+    <h3>Członkowie grupy</h3>
+    <ul class="member-list">
+      <!-- Group leader (displayed at the top) -->
+      <li class="leader-item">
+        <div class="member-tile leader-tile">
+          <div class="member-tile-left">{{ leader.username }}</div>
+          <div class="member-tile-center">Lider</div>
+          <div class="member-tile-right">
+            <!-- No edit button for the leader -->
           </div>
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ul>
-  <!-- Przycisk "Dodaj członka" może pozostać poza listą lub być usunięty -->
+        </div>
+      </li>
+      <!-- Visual separator between leader and members -->
+      <hr class="leader-separator">
+      <!-- Regular members list -->
+      {% for member in group_members %}
+        {% if member.username != leader.username %}
+          <li>
+            <div class="member-tile">
+              <div class="member-tile-left">
+                {{ member.username }}
+              </div>
+              <div class="member-tile-center">
+                {% if member.username in member_roles %}
+                  {{ member_roles|dict_key:member.username }}
+                {% else %}
+                  Brak roli
+                {% endif %}
+              </div>
+              <div class="member-tile-right">
+                {% if is_leader %}
+                  <a href="{% url 'edit_member' group.uid member.username %}" class="icon-link" title="Modyfikuj członka">
+                    <img src="{% static 'icons/edit.svg' %}" alt="Edytuj" style="height:20px; width:auto;">
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
 </div>
 
-<!-- Modal dodawania zadania -->
+<!-- Modal for adding new tasks -->
 <div id="addTaskModal" class="modal">
   <div class="modal-content form-container wide-modal">
     <h4>Dodaj zadanie</h4>
     <form method="POST" action="{% url 'add_task' group.uid %}">
       {% csrf_token %}
       <div class="modal-columns">
+        <!-- Left column - basic task information -->
         <div class="modal-column">
           <label>Nazwa zadania</label>
           <input type="text" name="title" required>
@@ -269,6 +288,7 @@
           <textarea name="description"></textarea>
         </div>
         
+        <!-- Right column - assignments and dependencies -->
         <div class="modal-column">
           <label>Komu przydzielasz?</label>
           <select name="assigned_user" multiple class="multi-select" size="6">
@@ -288,6 +308,7 @@
         </div>
       </div>
       
+      <!-- Form action buttons -->
       <div class="modal-footer">
         <button type="submit" class="btn">Zapisz</button>
         <button type="button" class="btn cancel-btn" onclick="closeAddTaskModal()">Anuluj</button>
@@ -296,7 +317,7 @@
   </div>
 </div>
 
-<!-- Modal dodawania członka -->
+<!-- Modal for adding new group members -->
 <div id="addMemberModal" class="modal">
   <div class="modal-content form-container">
     <h4>Dodaj członka</h4>
@@ -320,7 +341,7 @@
   </div>
 </div>
 
-<!-- Modal edycji nazwy grupy -->
+<!-- Modal for editing group name -->
 <div id="editGroupNameModal" class="modal">
   <div class="modal-content form-container">
     <h4>Edycja nazwy grupy</h4>
@@ -332,17 +353,19 @@
   </div>
 </div>
 
-<!-- Modal zarządzania ukończonymi zadaniami -->
+<!-- Modal for managing completed tasks -->
 <div id="completedTasksModal" class="modal">
   <div class="modal-content form-container wide-modal">
     <h4>Zarządzanie ukończonymi zadaniami</h4>
     
+    <!-- Bulk actions header -->
     <div class="completed-tasks-header">
       <button id="deleteAllCompletedBtn" class="btn delete-all-btn" onclick="confirmDeleteAllCompleted()">
         Usuń wszystkie ukończone
       </button>
     </div>
     
+    <!-- Completed tasks list with selection capabilities -->
     <div class="completed-tasks-list-container">
       <form id="completedTasksForm" method="POST" action="{% url 'delete_completed_tasks' group.uid %}">
         {% csrf_token %}
@@ -373,8 +396,10 @@
           </table>
         </div>
         
+        <!-- Hidden field for bulk delete operations -->
         <input type="hidden" name="delete_all" id="deleteAllInput" value="0">
         
+        <!-- Form action buttons -->
         <div class="modal-footer">
           <button type="submit" class="btn">Usuń wybrane</button>
           <button type="button" class="btn cancel-btn" onclick="closeCompletedTasksModal()">Anuluj</button>
@@ -384,5 +409,6 @@
   </div>
 </div>
 
+<!-- Include the JavaScript file for interactive functionality -->
 <script src="{% static 'js/script.js' %}"></script>
 {% endblock %}
