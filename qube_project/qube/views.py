@@ -218,12 +218,20 @@ def group_detail_view(request, group_uid):
         group_members.insert(0, leader)
 
     all_tasks = group.tasks.all()
+    
+    # Aktualizacja statusu blokady dla wszystkich zadań w grupie
+    for task in all_tasks:
+        task.update_blocked_status()
 
     # Filtrowanie zadań na podstawie parametrów GET (jeśli są)
     status_filter = request.GET.get('status')
     priority_filter = request.GET.get('priority')
     due_date_filter = request.GET.get('due_date')  # oczekiwany format "YYYY-MM-DD"
+    blocked_filter = request.GET.get('blocked')
 
+    # Pobierz listę ukończonych zadań dla modalu
+    completed_tasks = [task for task in all_tasks if task.status == "Zakończone"]
+    
     filtered_tasks = []
     for task in all_tasks:
         if status_filter and task.status != status_filter:
@@ -237,6 +245,11 @@ def group_detail_view(request, group_uid):
                     continue
             except ValueError:
                 pass
+        if blocked_filter:
+            if blocked_filter == "true" and not task.is_blocked:
+                continue
+            if blocked_filter == "false" and task.is_blocked:
+                continue
         filtered_tasks.append(task)
 
     # Jeśli użytkownik nie jest liderem, pokaż tylko zadania do których jest przypisany
@@ -263,6 +276,11 @@ def group_detail_view(request, group_uid):
         if rel and rel.role:
             member_roles[member.username] = rel.role
 
+    # Przygotowanie danych o zależnościach dla każdego zadania
+    task_dependencies = {}
+    for task in all_tasks:
+        task_dependencies[task.uid] = list(task.depends_on.all())
+
     context = {
         'group': group,
         'leader': leader,
@@ -276,6 +294,8 @@ def group_detail_view(request, group_uid):
         'status_filter': status_filter,
         'priority_filter': priority_filter,
         'due_date_filter': due_date_filter,
+        'task_dependencies': task_dependencies,
+        'completed_tasks': completed_tasks,
     }
     return render(request, 'group/group_detail.html', context)
 
@@ -328,12 +348,12 @@ def add_task_view(request, group_uid):
 
     if request.method == 'POST':
         title = request.POST.get('title')
-        assigned_user = request.POST.get('assigned_user')
         status = request.POST.get('status')
         priority = request.POST.get('priority')
         description = request.POST.get('description')
         due_date_str = request.POST.get('due_date')  # data w formacie "YYYY-MM-DD"
 
+        # Tworzenie nowego zadania
         new_task = Task(
             title=title,
             status=status,
@@ -348,12 +368,31 @@ def add_task_view(request, group_uid):
             except ValueError:
                 messages.warning(request, f"Nieprawidłowy format daty: {due_date_str}")
 
-        try:
-            user_for_task = UserNode.nodes.get(username=assigned_user)
-            new_task.assigned_to.connect(user_for_task)
-        except UserNode.DoesNotExist:
-            messages.warning(request, f"Nie znaleziono użytkownika: {assigned_user}")
+        # Przypisywanie użytkowników (obsługa wielu użytkowników)
+        assigned_users = request.POST.getlist('assigned_user')
+        for username in assigned_users:
+            try:
+                user_for_task = UserNode.nodes.get(username=username)
+                new_task.assigned_to.connect(user_for_task)
+            except UserNode.DoesNotExist:
+                messages.warning(request, f"Nie znaleziono użytkownika: {username}")
 
+        # Dodawanie zależności zadań
+        dependency_tasks = request.POST.getlist('dependency_tasks')
+        has_dependencies = False
+        for task_uid in dependency_tasks:
+            try:
+                dependency_task = Task.nodes.get(uid=task_uid)
+                new_task.depends_on.connect(dependency_task)
+                has_dependencies = True
+            except Task.DoesNotExist:
+                messages.warning(request, f"Nie znaleziono zadania o ID: {task_uid}")
+
+        # Jeśli zadanie ma zależności, sprawdzamy jego status blokady
+        if has_dependencies:
+            new_task.update_blocked_status()
+
+        # Łączenie zadania z grupą
         group.tasks.connect(new_task)
 
         messages.success(request, f"Zadanie '{title}' zostało dodane.")
@@ -384,13 +423,15 @@ def edit_task_view(request, group_uid, task_uid):
         messages.error(request, "Brak uprawnień do edycji zadania.")
         return redirect('group_detail', group_uid=group.uid)
 
-    # Pobieramy przypisanego użytkownika przy pomocy metody single()
-    try:
-        assigned_user = task.assigned_to.single()
-    except Exception:
-        assigned_user = None
+    # Pobieramy przypisanych użytkowników
+    assigned_users = list(task.assigned_to.all())
+    # Pobieramy zależności zadania
+    dependencies = list(task.depends_on.all())
 
     if request.method == "POST":
+        old_status = task.status
+        new_status = request.POST.get('status')
+        
         if is_leader:
             task.title = request.POST.get('title')
             task.priority = request.POST.get('priority')
@@ -403,29 +444,57 @@ def edit_task_view(request, group_uid, task_uid):
             else:
                 task.due_date = None
 
+            # Aktualizacja przypisanych użytkowników
             task.assigned_to.disconnect_all()
-            new_assigned_username = request.POST.get('assigned_user')
-            try:
-                new_assigned_user = UserNode.nodes.get(username=new_assigned_username)
-                task.assigned_to.connect(new_assigned_user)
-            except UserNode.DoesNotExist:
-                messages.warning(request, f"Użytkownik {new_assigned_username} nie istnieje.")
+            assigned_users = request.POST.getlist('assigned_user')
+            for username in assigned_users:
+                try:
+                    user = UserNode.nodes.get(username=username)
+                    task.assigned_to.connect(user)
+                except UserNode.DoesNotExist:
+                    messages.warning(request, f"Użytkownik {username} nie istnieje.")
+            
+            # Aktualizacja zależności zadań
+            task.depends_on.disconnect_all()
+            dependency_tasks = request.POST.getlist('dependency_tasks')
+            for dep_uid in dependency_tasks:
+                try:
+                    dep_task = Task.nodes.get(uid=dep_uid)
+                    task.depends_on.connect(dep_task)
+                except Task.DoesNotExist:
+                    messages.warning(request, f"Zadanie zależne o ID {dep_uid} nie istnieje.")
+        
         task.description = request.POST.get('description')
-        task.status = request.POST.get('status')
+        task.status = new_status
+        
+        # Aktualizacja daty ukończenia, jeśli status się zmienił na "Zakończone"
+        if old_status != "Zakończone" and new_status == "Zakończone":
+            task.completion_date = date.today()
+        # Usunięcie daty ukończenia, jeśli status się zmienił z "Zakończone" na inny
+        elif old_status == "Zakończone" and new_status != "Zakończone":
+            task.completion_date = None
+            
+        # Aktualizacja statusu blokady
+        task.update_blocked_status()
         task.save()
+        
         messages.success(request, "Zadanie zostało zaktualizowane.")
         return redirect('group_detail', group_uid=group.uid)
     else:
-        group_members = group.members.all()
+        # Pobieramy wszystkie zadania w grupie oprócz edytowanego
+        all_tasks = [t for t in group.tasks.all() if t.uid != task.uid]
+        
         context = {
             'task': task,
             'group': group,
-            'group_members': group_members,
+            'group_members': group.members.all(),
             'is_leader': is_leader,
-            'assigned_user': assigned_user,  # przekazujemy przypisanego użytkownika
+            'assigned_users': assigned_users,
+            'all_tasks': all_tasks,
+            'dependencies': dependencies
         }
         return render(request, 'group/edit_task.html', context)
-
+    
 @neo4j_login_required
 def edit_member_view(request, group_uid, username):
     try:
@@ -526,3 +595,105 @@ def delete_group_view(request, group_uid):
 
     messages.success(request, "Grupa oraz wszystkie jej zadania zostały usunięte.")
     return redirect('dashboard')
+
+@neo4j_login_required
+def delete_completed_tasks_view(request, group_uid):
+    try:
+        group = Group.nodes.get(uid=group_uid)
+    except Group.DoesNotExist:
+        messages.error(request, "Grupa nie istnieje.")
+        return redirect('dashboard')
+
+    user_node = get_current_user(request)
+    is_leader = (group.leader.single() == user_node)
+    
+    # Tylko lider grupy może usuwać zadania
+    if not is_leader:
+        messages.error(request, "Brak uprawnień do usuwania zadań.")
+        return redirect('group_detail', group_uid=group_uid)
+
+    if request.method == "POST":
+        delete_all = request.POST.get('delete_all') == '1'
+        
+        if delete_all:
+            # Usuwanie wszystkich ukończonych zadań
+            tasks_to_delete = []
+            for task in group.tasks.all():
+                if task.status == "Zakończone":
+                    tasks_to_delete.append(task)
+            
+            for task in tasks_to_delete:
+                group.tasks.disconnect(task)
+                task.delete()
+            
+            messages.success(request, f"Usunięto wszystkie ukończone zadania ({len(tasks_to_delete)}).")
+        else:
+            # Usuwanie wybranych zadań
+            selected_tasks = request.POST.getlist('selected_tasks')
+            deleted_count = 0
+            
+            for task_uid in selected_tasks:
+                try:
+                    task = Task.nodes.get(uid=task_uid)
+                    if task in group.tasks.all() and task.status == "Zakończone":
+                        group.tasks.disconnect(task)
+                        task.delete()
+                        deleted_count += 1
+                except Task.DoesNotExist:
+                    continue
+            
+            if deleted_count > 0:
+                messages.success(request, f"Usunięto {deleted_count} zadań.")
+            else:
+                messages.info(request, "Nie wybrano żadnych zadań do usunięcia.")
+    
+    return redirect('group_detail', group_uid=group_uid)
+
+@neo4j_login_required
+def delete_task_view(request, group_uid, task_uid):
+    try:
+        group = Group.nodes.get(uid=group_uid)
+    except Group.DoesNotExist:
+        messages.error(request, "Grupa nie istnieje.")
+        return redirect('dashboard')
+
+    user_node = get_current_user(request)
+    is_leader = (group.leader.single() == user_node)
+    
+    # Tylko lider grupy może usuwać zadania
+    if not is_leader:
+        messages.error(request, "Brak uprawnień do usuwania zadań.")
+        return redirect('group_detail', group_uid=group_uid)
+
+    try:
+        task = Task.nodes.get(uid=task_uid)
+    except Task.DoesNotExist:
+        messages.error(request, "Zadanie nie istnieje.")
+        return redirect('group_detail', group_uid=group_uid)
+
+    # Sprawdź, czy zadanie należy do tej grupy
+    if task not in group.tasks.all():
+        messages.error(request, "Zadanie nie należy do tej grupy.")
+        return redirect('group_detail', group_uid=group_uid)
+
+    if request.method == "POST":
+        # Najpierw zaktualizuj wszystkie zadania, które zależą od tego
+        dependent_tasks = []
+        for t in group.tasks.all():
+            if task in t.depends_on.all():
+                dependent_tasks.append(t)
+        
+        # Usuń to zadanie z zależności innych zadań
+        for dep_task in dependent_tasks:
+            dep_task.depends_on.disconnect(task)
+            dep_task.update_blocked_status()
+        
+        # Usuń zadanie
+        task_title = task.title
+        group.tasks.disconnect(task)
+        task.delete()
+        
+        messages.success(request, f"Zadanie '{task_title}' zostało usunięte.")
+        return redirect('group_detail', group_uid=group_uid)
+    
+    return redirect('group_detail', group_uid=group_uid)

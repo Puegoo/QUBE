@@ -55,26 +55,43 @@
       <h3>Twoje zadania</h3>
     {% endif %}
     <div class="filter-buttons">
-      <button type="button" class="filter-btn" data-filter="due_date" onclick="setTaskFilter('due_date')">
-        <img src="{% static 'icons/data.svg' %}" alt="Data" class="filter-icon">
+      <div class="filter-group">
+        <button type="button" class="filter-btn" data-filter="due_date" onclick="setTaskFilter('due_date')">
+          <img src="{% static 'icons/data.svg' %}" alt="Data" class="filter-icon">
+        </button>
+        <button type="button" class="filter-btn" data-filter="status" onclick="setTaskFilter('status')">
+          <img src="{% static 'icons/status.svg' %}" alt="Status" class="filter-icon">
+        </button>
+        <button type="button" class="filter-btn" data-filter="priority" onclick="setTaskFilter('priority')">
+          <img src="{% static 'icons/priority.svg' %}" alt="Priorytet" class="filter-icon">
+        </button>
+        <button type="button" class="filter-btn" data-filter="blocked" onclick="setTaskFilter('blocked')">
+          <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="filter-icon">
+        </button>
+        <button type="button" class="sort-btn" onclick="toggleTaskSortOrder()">
+          <img src="{% static 'icons/ascending.svg' %}" alt="Sortuj rosnąco" class="sort-icon" id="taskSortIcon">
+        </button>
+      </div>
+
+      {% if is_leader %}
+      <button type="button" class="filter-btn completed-tasks-btn" onclick="openCompletedTasksModal()" title="Zarządzaj ukończonymi zadaniami">
+        <img src="{% static 'icons/completed.svg' %}" alt="Ukończone zadania" class="filter-icon">
       </button>
-      <button type="button" class="filter-btn" data-filter="status" onclick="setTaskFilter('status')">
-        <img src="{% static 'icons/status.svg' %}" alt="Status" class="filter-icon">
-      </button>
-      <button type="button" class="filter-btn" data-filter="priority" onclick="setTaskFilter('priority')">
-        <img src="{% static 'icons/priority.svg' %}" alt="Priorytet" class="filter-icon">
-      </button>
-      <button type="button" class="sort-btn" onclick="toggleTaskSortOrder()">
-        <img src="{% static 'icons/ascending.svg' %}" alt="Sortuj rosnąco" class="sort-icon" id="taskSortIcon">
-      </button>
+      {% endif %}
     </div>
+    <!-- Część z zadaniami w widoku grup -->
     <ul class="task-list">
       {% if is_leader %}
         {% for task in all_tasks %}
-          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.get_status_display }}" data-priority="{{ task.priority }}">
-            <div class="task-tile" style="width: 100%;">
+          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.get_status_display }}" data-priority="{{ task.priority }}" data-blocked="{{ task.is_blocked }}">
+            <div class="task-tile {% if task.is_blocked %}task-blocked{% endif %}" style="width: 100%;">
               <div class="task-tile-left" style="justify-content: flex-start;">
                 <span>{{ task.title }}</span>
+                {% if task.is_blocked %}
+                <span class="blocked-indicator" title="Zadanie zablokowane przez niezakończone zadania zależne">
+                  <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="lock-icon">
+                </span>
+                {% endif %}
               </div>
               <div class="task-tile-center">
                 {{ task.get_status_display }}
@@ -91,10 +108,15 @@
         {% endfor %}
       {% else %}
         {% for task in user_tasks %}
-          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.get_status_display }}" data-priority="{{ task.priority }}">
-            <div class="task-tile" style="width: 100%;">
+          <li data-due_date="{{ task.due_date|default_if_none:'' }}" data-status="{{ task.get_status_display }}" data-priority="{{ task.priority }}" data-blocked="{{ task.is_blocked }}">
+            <div class="task-tile {% if task.is_blocked %}task-blocked{% endif %}" style="width: 100%;">
               <div class="task-tile-left" style="justify-content: flex-start;">
                 <span>{{ task.title }}</span>
+                {% if task.is_blocked %}
+                <span class="blocked-indicator" title="Zadanie zablokowane przez niezakończone zadania zależne">
+                  <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="lock-icon">
+                </span>
+                {% endif %}
               </div>
               <div class="task-tile-center">
                 {{ task.get_status_display }}
@@ -125,12 +147,17 @@
             {% if member.username in member_tasks %}
               {% for task in member_tasks|dict_key:member.username %}
                 <li style="border: none; margin: 0; padding: 0;">
-                  <div class="task-tile" style="width: 100%;">
+                  <div class="task-tile {% if task.is_blocked %}task-blocked{% endif %}" style="width: 100%;">
                     <div class="task-tile-left">
                       <span class="priority-icon" style="color: {{ task.priority|priority_color }};">
                         {{ task.priority|priority_symbol }}
                       </span>
                       &nbsp; {{ task.title }}
+                      {% if task.is_blocked %}
+                      <span class="blocked-indicator" title="Zadanie zablokowane przez niezakończone zadania zależne">
+                        <img src="{% static 'icons/lock.svg' %}" alt="Zablokowane" class="lock-icon">
+                      </span>
+                      {% endif %}
                     </div>
                     <div class="task-tile-center">
                       {{ task.get_status_display }}
@@ -212,43 +239,58 @@
 
 <!-- Modal dodawania zadania -->
 <div id="addTaskModal" class="modal">
-  <div class="modal-content form-container">
+  <div class="modal-content form-container wide-modal">
     <h4>Dodaj zadanie</h4>
     <form method="POST" action="{% url 'add_task' group.uid %}">
       {% csrf_token %}
-      <label>Nazwa zadania</label>
-      <input type="text" name="title" required>
-      
-      <label>Priorytet</label>
-      <select name="priority">
-        <option value="low">Niski</option>
-        <option value="medium">Średni</option>
-        <option value="high">Wysoki</option>
-      </select>
-      
-      <label>Data oddania</label>
-      <input type="date" name="due_date">
-      
-      <label>Komu przydzielasz?</label>
-      <select name="assigned_user">
-        {% for member in group_members %}
-          <option value="{{ member.username }}">{{ member.username }}</option>
-        {% endfor %}
-      </select>
-      
-      <label>Status</label>
-      <select name="status">
-        <option value="Oczekujące">Oczekujące</option>
-        <option value="W trakcie">W trakcie</option>
-        <option value="Zakończone">Zakończone</option>
-      </select>
-      
-      <label>Opis</label>
-      <textarea name="description"></textarea>
+      <div class="modal-columns">
+        <div class="modal-column">
+          <label>Nazwa zadania</label>
+          <input type="text" name="title" required>
+          
+          <label>Priorytet</label>
+          <select name="priority">
+            <option value="low">Niski</option>
+            <option value="medium">Średni</option>
+            <option value="high">Wysoki</option>
+          </select>
+          
+          <label>Data oddania</label>
+          <input type="date" name="due_date">
+          
+          <label>Status</label>
+          <select name="status">
+            <option value="Oczekujące">Oczekujące</option>
+            <option value="W trakcie">W trakcie</option>
+            <option value="Zakończone">Zakończone</option>
+          </select>
+          
+          <label>Opis</label>
+          <textarea name="description"></textarea>
+        </div>
+        
+        <div class="modal-column">
+          <label>Komu przydzielasz?</label>
+          <select name="assigned_user" multiple class="multi-select" size="6">
+            {% for member in group_members %}
+              <option value="{{ member.username }}">{{ member.username }}</option>
+            {% endfor %}
+          </select>
+          <p class="select-help">Przytrzymaj Ctrl (Windows) lub Cmd (Mac), aby wybrać wiele osób</p>
+          
+          <label>Zadanie zależne od</label>
+          <select name="dependency_tasks" multiple class="multi-select" size="6">
+            {% for task in all_tasks %}
+              <option value="{{ task.uid }}">{{ task.title }}</option>
+            {% endfor %}
+          </select>
+          <p class="select-help">To zadanie będzie zablokowane, dopóki zadania zależne nie zostaną zakończone</p>
+        </div>
+      </div>
       
       <div class="modal-footer">
-        <button type="submit">Zapisz</button>
-        <button type="button" class="cancel-btn" onclick="closeAddTaskModal()">Anuluj</button>
+        <button type="submit" class="btn">Zapisz</button>
+        <button type="button" class="btn cancel-btn" onclick="closeAddTaskModal()">Anuluj</button>
       </div>
     </form>
   </div>
@@ -271,8 +313,8 @@
       <input type="text" name="new_member_role">
       
       <div class="modal-footer">
-        <button type="submit">Dodaj</button>
-        <button type="button" class="cancel-btn" onclick="closeAddMemberModal()">Anuluj</button>
+        <button type="submit" class="btn">Dodaj</button>
+        <button type="button" class="btn cancel-btn" onclick="closeAddMemberModal()">Anuluj</button>
       </div>
     </form>
   </div>
@@ -286,6 +328,58 @@
     <div class="modal-footer">
       <button type="button" class="btn" onclick="saveGroupNameModal()">Zapisz</button>
       <button type="button" class="btn cancel-btn" onclick="closeEditGroupNameModal()">Anuluj</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal zarządzania ukończonymi zadaniami -->
+<div id="completedTasksModal" class="modal">
+  <div class="modal-content form-container wide-modal">
+    <h4>Zarządzanie ukończonymi zadaniami</h4>
+    
+    <div class="completed-tasks-header">
+      <button id="deleteAllCompletedBtn" class="btn delete-all-btn" onclick="confirmDeleteAllCompleted()">
+        Usuń wszystkie ukończone
+      </button>
+    </div>
+    
+    <div class="completed-tasks-list-container">
+      <form id="completedTasksForm" method="POST" action="{% url 'delete_completed_tasks' group.uid %}">
+        {% csrf_token %}
+        <div class="completed-tasks-list">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th style="width: 40px">
+                  <input type="checkbox" id="selectAllCompleted" onclick="toggleAllCompletedTasks()">
+                </th>
+                <th>Nazwa zadania</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in completed_tasks %}
+                <tr>
+                  <td>
+                    <input type="checkbox" name="selected_tasks" value="{{ task.uid }}" class="task-checkbox">
+                  </td>
+                  <td>{{ task.title }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="2" class="empty-message">Brak ukończonych zadań</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <input type="hidden" name="delete_all" id="deleteAllInput" value="0">
+        
+        <div class="modal-footer">
+          <button type="submit" class="btn">Usuń wybrane</button>
+          <button type="button" class="btn cancel-btn" onclick="closeCompletedTasksModal()">Anuluj</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

@@ -2,7 +2,9 @@ from django.urls import path
 from .views import (
     main_view, register_view, login_view, logout_view,
     dashboard_view, group_view, create_group_view, settings_view, 
-    group_detail_view, add_task_view, add_member_view, edit_task_view, edit_member_view, update_group_name_view, delete_group_view
+    group_detail_view, add_task_view, add_member_view, edit_task_view, 
+    edit_member_view, update_group_name_view, delete_group_view, 
+    delete_completed_tasks_view, delete_task_view
 )
 
 urlpatterns = [
@@ -21,4 +23,6 @@ urlpatterns = [
     path('group/<str:group_uid>/edit_member/<str:username>/', edit_member_view, name='edit_member'),
     path('group/<str:uid>/update-name/', update_group_name_view, name='update_group_name'),
     path('group/<str:group_uid>/delete/', delete_group_view, name='delete_group'),
+    path('group/<str:group_uid>/delete-completed-tasks/', delete_completed_tasks_view, name='delete_completed_tasks'),
+    path('group/<str:group_uid>/delete-task/<str:task_uid>/', delete_task_view, name='delete_task'),
 ]

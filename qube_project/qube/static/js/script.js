@@ -7,7 +7,7 @@ if (!window.groupDetailScriptLoaded) {
   }
 
   // Globalne zmienne filtrowania
-  window.currentFilter = ''; // może być 'due_date', 'status' lub 'priority'
+  window.currentFilter = ''; // może być 'due_date', 'status', 'priority' lub 'blocked'
   window.sortAscending = true;
 
   /**
@@ -140,10 +140,21 @@ if (!window.groupDetailScriptLoaded) {
       tasksArray.forEach(item => item.style.display = 'block');
       return;
     }
+
+    // Ukrywamy zadania, które nie spełniają kryteriów
     tasksArray.forEach(item => {
-      const value = item.getAttribute('data-' + window.currentFilter);
-      item.style.display = value ? 'block' : 'none';
+      let value;
+      if (window.currentFilter === 'blocked') {
+        value = item.getAttribute('data-blocked');
+        // Pokazujemy tylko zablokowane zadania gdy filtr jest aktywny
+        item.style.display = (value === 'True' || value === 'true') ? 'block' : 'none';
+      } else {
+        value = item.getAttribute('data-' + window.currentFilter);
+        item.style.display = value ? 'block' : 'none';
+      }
     });
+
+    // Sortowanie według aktywnego filtra
     if (window.currentFilter === 'due_date') {
       tasksArray.sort((a, b) => {
         let aDate = a.getAttribute('data-due_date') || '9999-12-31';
@@ -163,7 +174,15 @@ if (!window.groupDetailScriptLoaded) {
         const order = { 'high': 3, 'medium': 2, 'low': 1 };
         return window.sortAscending ? order[aPriority] - order[bPriority] : order[bPriority] - order[aPriority];
       });
+    } else if (window.currentFilter === 'blocked') {
+      tasksArray.sort((a, b) => {
+        let aBlocked = a.getAttribute('data-blocked') === 'true';
+        let bBlocked = b.getAttribute('data-blocked') === 'true';
+        return window.sortAscending ? aBlocked - bBlocked : bBlocked - aBlocked;
+      });
     }
+
+    // Odświeżamy listę zadań z zachowaniem sortowania
     const taskList = document.querySelector('.task-list');
     if (taskList) {
       taskList.innerHTML = '';
@@ -219,44 +238,74 @@ if (!window.groupDetailScriptLoaded) {
     });
   };
 
-  // Funkcje obsługujące modal potwierdzający usunięcie członka w edycji członka// Funkcje obsługujące modal potwierdzający usunięcie członka
-window.openDeleteConfirmModal = function() {
-  const modal = document.getElementById('deleteConfirmModal');
-  if (modal) modal.style.display = 'flex';
-};
+  // Funkcje obsługujące modal potwierdzający usunięcie członka
+  window.openDeleteConfirmModal = function() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) modal.style.display = 'flex';
+  };
 
-window.closeDeleteConfirmModal = function() {
-  const modal = document.getElementById('deleteConfirmModal');
-  if (modal) modal.style.display = 'none';
-};
+  window.closeDeleteConfirmModal = function() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) modal.style.display = 'none';
+  };
 
-window.confirmDeleteMember = function() {
-  const confirmUsernameInput = document.getElementById('confirmUsername');
-  const enteredUsername = confirmUsernameInput ? confirmUsernameInput.value.trim() : "";
-  const memberUsername = document.getElementById('memberUsername').textContent.trim();
-  
-  // Jeśli nie wpisano poprawnej nazwy, pokazujemy alert
-  if (enteredUsername !== memberUsername) {
-    alert("Wpisana nazwa nie zgadza się z nazwą członka!");
-    return;
-  }
-  
-  const deleteInput = document.getElementById('deleteInput');
-  const deleteTasksCheckbox = document.getElementById('deleteTasksCheckbox');
-  const deleteTasksInput = document.getElementById('deleteTasksInput');
+  window.confirmDeleteMember = function() {
+    const confirmUsernameInput = document.getElementById('confirmUsername');
+    const enteredUsername = confirmUsernameInput ? confirmUsernameInput.value.trim() : "";
+    const memberUsername = document.getElementById('memberUsername').textContent.trim();
+    
+    // Jeśli nie wpisano poprawnej nazwy, pokazujemy alert
+    if (enteredUsername !== memberUsername) {
+      alert("Wpisana nazwa nie zgadza się z nazwą członka!");
+      return;
+    }
+    
+    const deleteInput = document.getElementById('deleteInput');
+    const deleteTasksCheckbox = document.getElementById('deleteTasksCheckbox');
+    const deleteTasksInput = document.getElementById('deleteTasksInput');
 
-  if (deleteInput) {
-    deleteInput.value = "1";
-  }
-  if (deleteTasksInput) {
-    deleteTasksInput.value = deleteTasksCheckbox.checked ? "1" : "0";
-  }
-  
-  const form = document.getElementById('editMemberForm');
-  if (form) {
-    form.submit();
-  }
-};
+    if (deleteInput) {
+      deleteInput.value = "1";
+    }
+    if (deleteTasksInput) {
+      deleteTasksInput.value = deleteTasksCheckbox.checked ? "1" : "0";
+    }
+    
+    const form = document.getElementById('editMemberForm');
+    if (form) {
+      form.submit();
+    }
+  };
+
+  /* Funkcje zarządzania ukończonymi zadaniami */
+  window.openCompletedTasksModal = function() {
+    const modal = document.getElementById('completedTasksModal');
+    if (modal) modal.style.display = 'flex';
+  };
+
+  window.closeCompletedTasksModal = function() {
+    const modal = document.getElementById('completedTasksModal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.toggleAllCompletedTasks = function() {
+    const selectAllCheckbox = document.getElementById('selectAllCompleted');
+    const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+    
+    taskCheckboxes.forEach(checkbox => {
+      checkbox.checked = selectAllCheckbox.checked;
+    });
+  };
+
+  window.confirmDeleteAllCompleted = function() {
+    if (confirm('Czy na pewno chcesz usunąć wszystkie ukończone zadania? Ta operacja jest nieodwracalna.')) {
+      const deleteAllInput = document.getElementById('deleteAllInput');
+      if (deleteAllInput) {
+        deleteAllInput.value = "1";
+        document.getElementById('completedTasksForm').submit();
+      }
+    }
+  };
 
   // Funkcja pomocnicza do pobierania CSRF tokenu z ciasteczek
   function getCookie(name) {
@@ -272,5 +321,24 @@ window.confirmDeleteMember = function() {
       }
     }
     return cookieValue;
+  }
+}
+
+function confirmDeleteTask(taskUid, taskTitle) {
+  const modal = document.getElementById('deleteTaskConfirmModal');
+  const taskTitleElement = document.getElementById('taskTitleToDelete');
+  
+  if (modal && taskTitleElement) {
+    taskTitleElement.textContent = taskTitle;
+    modal.style.display = 'flex';
+  }
+  
+  return false;
+}
+
+function closeDeleteTaskModal() {
+  const modal = document.getElementById('deleteTaskConfirmModal');
+  if (modal) {
+    modal.style.display = 'none';
   }
 }

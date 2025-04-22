@@ -128,6 +128,12 @@ main {
   align-items: stretch;
 }
 
+/* Style dla szerszego modalu */
+.wide-modal {
+  max-width: 900px !important;
+  width: 90% !important;
+}
+
 .form-container h2 {
   text-align: center;
   margin-bottom: 20px;
@@ -237,6 +243,7 @@ form select:focus {
 
 .form-container form .btn.cancel-btn {
   background-color: #a83232 !important;  /* czerwony kolor */
+  text-align: center;
   color: #fff;
 }
 
@@ -695,38 +702,18 @@ form select:focus {
   margin-bottom: 15px;
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-}
-
-.modal-footer .btn {
-  background-color: #8F9085;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.3s;
-  margin-top: 10px;
-}
-
-.modal-footer .cancel-btn {
-  background-color: #a83232;
-}
-
-.modal-footer .cancel-btn:hover {
-  background-color: #8f2a2a;
-}
-
 /* Kontener przycisków filtrowania – wyrównany do lewej */
 .filter-buttons {
   display: flex;
-  gap: 10px;
+  justify-content: space-between; /* Rozciąga elementy na całą szerokość */
+  align-items: center;
   margin-bottom: 15px;
-  justify-content: flex-start;
   padding: 2px 0 0 0;
+}
+
+.filter-group {
+  display: flex;
+  gap: 10px;
 }
 
 /* Przyciski filtrowania jako zaokrąglone prostokąty (podobne do innych przycisków) */
@@ -806,6 +793,22 @@ form select:focus {
 .task-list,
 .member-list {
   flex: 1;
+}
+
+/* Style dla ikony kłódki */
+.lock-icon {
+  height: 20px;
+  width: auto;
+  margin-left: 0px;
+  vertical-align: middle;
+}
+
+.blocked-indicator {
+  margin-left: 6px;
+  color: #a83232;
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Update buttons so they always appear at the bottom */
@@ -898,6 +901,9 @@ form select:focus {
 
 .modal-content h4 {
   margin: 0;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
 }
 
 /* Stylizacja inputów i textarea w modalu, aby pasowały do reszty formularzy */
@@ -933,27 +939,100 @@ form select:focus {
   }
 }
 
-.modal-content button {
+/* Style dla układu dwukolumnowego w modalach i formularzach */
+.modal-columns, .form-columns {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.modal-column, .form-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.select-help {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Style dla zablokowanych zadań */
+.task-blocked {
+  background-color: #f0f0f0 !important;
+  border: 1px solid #ccc !important;
+  opacity: 0.8;
+  position: relative;
+}
+
+.blocked-indicator {
+  margin-left: 6px;
+  font-size: 14px;
+  color: #a83232;
+  cursor: help;
+}
+
+.blocked-select {
+  background-color: #f0f0f0;
+  color: #777;
+  cursor: not-allowed;
+}
+
+.warning-text {
+  color: #a83232;
+  font-size: 13px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Style dla wyboru wielokrotnego */
+.multi-select {
+  height: auto;
+  min-height: 150px;
+}
+
+/* Układ przycisków formularza */
+.form-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Poprawiony styl przycisków w modalach */
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.modal-footer .btn {
   background-color: #8F9085;
   color: #fff;
-  padding: 10px 20px;
+  padding: 14px 28px;
   border-radius: 30px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
+  text-decoration: none;
   transition: background-color 0.3s, transform 0.3s;
-  margin-top: 10px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.modal-content button:hover {
+.modal-footer .btn:hover {
   background-color: #6D6E65;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
-.modal-content .cancel-btn {
+.modal-footer .cancel-btn {
   background-color: #a83232;
 }
-.modal-content .cancel-btn:hover {
+
+.modal-footer .cancel-btn:hover {
   background-color: #8f2a2a;
 }
 
@@ -973,21 +1052,76 @@ form select:focus {
   color: #333;
 }
 
-/* Dodatkowe style dla większych przycisków w modalu */
-.modal-content button {
-  padding: 10px 20px;
-  font-size: 1rem;
+/* Styl dla przycisku zarządzania ukończonymi zadaniami */
+.completed-tasks-btn {
+  background-color: #f9f9f9;
 }
 
-.modal-content .cancel-btn {
-  float: right;
-  background-color: #a83232;
-}
-.modal-content .cancel-btn:hover {
-  background-color: #8f2a2a;
+/* Style dla modalu ukończonych zadań */
+.completed-tasks-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
 }
 
+.delete-all-btn {
+  background-color: #333;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 
+.delete-all-btn:hover {
+  background-color: #000;
+  transform: none;
+}
+
+.completed-tasks-list-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.tasks-table th, 
+.tasks-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.tasks-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.tasks-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.empty-message {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  padding: 20px !important;
+}
 
 /* Allow textarea to resize only vertically */
 .form-container form textarea {
@@ -997,6 +1131,96 @@ form select:focus {
 
 .form-container form fieldset {
   margin-top: 20px;
+}
+
+/* Style dla listy zależności */
+.dependencies-list {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  padding: 8px;
+}
+
+.dependencies-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dependency-item {
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pending-dependency {
+  background-color: #ffe8e8;
+  border-left: 3px solid #a83232;
+}
+
+.completed-dependency {
+  background-color: #e8ffe8;
+  border-left: 3px solid #3eab38;
+}
+
+.dependency-title {
+  font-weight: 600;
+}
+
+.dependency-status {
+  font-style: italic;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.task-header-container {
+  position: relative;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.task-header-container h2 {
+  margin: 0;
+  text-align: center;
+}
+
+/* Style dla przycisku usuwania zadania */
+.task-actions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.delete-task-form {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.delete-task-btn {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 0;
+  margin: 0;
+  width: 50px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-task-btn:hover {
+  transform: translateY(-2px);
+  cursor: pointer;
 }
 
 /* === Sekcja kafelka zadań w środkowej kolumnie === */
@@ -1093,3 +1317,21 @@ footer {
   border-top: 1px solid #ddd;
   color: #333;
 }
+
+/* Style dla szerszego modalu */
+.wide-modal {
+  max-width: 900px !important;
+  width: 90% !important;
+}
+
+/* Poprawki dla mobilnych urządzeń */
+@media (max-width: 768px) {
+  .modal-columns, .form-columns {
+    flex-direction: column;
+  }
+  
+  .wide-modal {
+    max-width: 95% !important;
+  }
+}
+
