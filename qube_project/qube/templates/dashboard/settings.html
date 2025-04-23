@@ -44,17 +44,6 @@
         </fieldset>
         
         <button type="submit" class="btn">🔒 Zmień hasło</button>
-    </form>
-    
-    <!-- Display any messages from the backend -->
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    </form>    
 </div>
 {% endblock %}
