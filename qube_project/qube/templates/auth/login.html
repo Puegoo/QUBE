@@ -5,10 +5,11 @@
 <div class="form-container">
     <h2 style="text-align:center; margin-bottom:20px;">Logowanie</h2>
     
+    <!-- Display error messages -->
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
-        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}" style="color: {% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% else %}blue{% endif %}; margin-bottom: 15px; text-align: center;">
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
             {{ message }}
         </div>
         {% endfor %}

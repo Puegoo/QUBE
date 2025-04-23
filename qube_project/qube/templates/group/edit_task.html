@@ -1,131 +1,118 @@
 {% extends 'master.html' %}
 {% load static %}
 {% block content %}
-<div class="form-container" style="max-width: 700px;">
-  <h2>Edycja zadania</h2>
-  
-  {% if messages %}
-  <div class="messages">
-    {% for message in messages %}
-    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}" style="color: {% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% else %}blue{% endif %}; margin-bottom: 15px; text-align: center;">
-      {{ message }}
-    </div>
-    {% endfor %}
+<div class="form-container wide-modal">
+  <!-- Header container with task title and delete button (for leaders) -->
+  <div class="task-header-container">
+    {% if is_leader %}
+    <!-- Task deletion form with confirmation dialog -->
+    <form method="POST" action="{% url 'delete_task' group.uid task.uid %}" onsubmit="return confirm('Czy na pewno chcesz usunąć to zadanie?');" class="delete-task-form">
+      {% csrf_token %}
+      <button type="submit" class="filter-btn delete-task-btn" title="Usuń zadanie">
+        <img src="{% static 'icons/remove_task.svg' %}" alt="Usuń zadanie" class="filter-icon">
+      </button>
+    </form>
+    {% endif %}
+    
+    <h2>Edycja zadania</h2>
   </div>
-  {% endif %}
   
+  <!-- Task edit form -->
   <form method="POST">
     {% csrf_token %}
     
-    <label>Nazwa zadania</label>
-    <input type="text" name="title" value="{{ task.title }}" required {% if not is_leader %}disabled{% endif %}>
-    
-    <label>Opis</label>
-    <textarea name="description" required>{{ task.description }}</textarea>
-    
-    <label>Priorytet</label>
-    <select name="priority" {% if not is_leader %}disabled{% endif %}>
-      <option value="low" {% if task.priority == "low" %}selected{% endif %}>Niski</option>
-      <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Średni</option>
-      <option value="high" {% if task.priority == "high" %}selected{% endif %}>Wysoki</option>
-    </select>
-    
-    <label>Status</label>
-    <select name="status">
-      <option value="Oczekujące" {% if task.get_status_display == "Oczekujące" %}selected{% endif %}>Oczekujące</option>
-      <option value="W trakcie" {% if task.get_status_display == "W trakcie" %}selected{% endif %}>W trakcie</option>
-      <option value="Zakończone" {% if task.get_status_display == "Zakończone" %}selected{% endif %}>Zakończone</option>
-    </select>
-    
-    <label>Data oddania</label>
-    <input type="date" name="due_date" value="{% if task.due_date %}{{ task.due_date }}{% endif %}" {% if not is_leader %}disabled{% endif %}>
-    
-    <label>Przydziel do</label>
-    <select name="assigned_user" {% if not is_leader %}disabled{% endif %}>
-      {% for member in group_members %}
-        <option value="{{ member.username }}" {% if assigned_user and assigned_user.username == member.username %}selected{% endif %}>
-          {{ member.username }}
-        </option>
-      {% endfor %}
-    </select>
-    
-    {% if is_leader %}
-    <label>Zależne od zadań</label>
-    <div class="dependency-container">
-      <select name="dependencies" multiple style="height: 100px;">
-        {% for dep_task in all_tasks %}
-          {% if dep_task.uid != task.uid %}
-            <option value="{{ dep_task.uid }}" 
-              {% for dependency in dependent_tasks %}
-                {% if dependency.uid == dep_task.uid %}selected{% endif %}
+    <!-- Two-column layout for task properties -->
+    <div class="form-columns">
+      <!-- Left column: Basic task information -->
+      <div class="form-column">
+        <label>Nazwa zadania</label>
+        <!-- Task title field - only editable by group leaders -->
+        <input type="text" name="title" value="{{ task.title }}" required {% if not is_leader %}disabled{% endif %}>
+        
+        <label>Opis</label>
+        <!-- Task description - editable by all users -->
+        <textarea name="description" required>{{ task.description }}</textarea>
+        
+        <label>Priorytet</label>
+        <!-- Priority selection - only editable by group leaders -->
+        <select name="priority" {% if not is_leader %}disabled{% endif %}>
+          <option value="low" {% if task.priority == "low" %}selected{% endif %}>Niski</option>
+          <option value="medium" {% if task.priority == "medium" %}selected{% endif %}>Średni</option>
+          <option value="high" {% if task.priority == "high" %}selected{% endif %}>Wysoki</option>
+        </select>
+        
+        <label>Status</label>
+        <!-- Status selection - disabled if task is blocked by dependencies -->
+        <select name="status" {% if task.is_blocked %}disabled{% endif %} class="{% if task.is_blocked %}blocked-select{% endif %}">
+          <option value="Oczekujące" {% if task.get_status_display == "Oczekujące" %}selected{% endif %}>Oczekujące</option>
+          <option value="W trakcie" {% if task.get_status_display == "W trakcie" %}selected{% endif %}>W trakcie</option>
+          <option value="Zakończone" {% if task.get_status_display == "Zakończone" %}selected{% endif %}>Zakończone</option>
+        </select>
+        <!-- Warning message for blocked tasks -->
+        {% if task.is_blocked %}
+        <p class="warning-text">To zadanie jest zablokowane przez niezakończone zadania zależne.</p>
+        {% endif %}
+        
+        <label>Data oddania</label>
+        <!-- Due date field - only editable by group leaders -->
+        <input type="date" name="due_date" value="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% endif %}" {% if not is_leader %}disabled{% endif %}>
+      </div>
+      
+      <!-- Right column: Assignments and dependencies -->
+      <div class="form-column">
+        <label>Przydziel do</label>
+        <!-- Multi-select user assignment - only editable by group leaders -->
+        <select name="assigned_user" multiple class="multi-select" size="6" {% if not is_leader %}disabled{% endif %}>
+          {% for member in group_members %}
+            <option value="{{ member.username }}" 
+              {% for assigned_user in assigned_users %}
+                {% if assigned_user.username == member.username %}selected{% endif %}
               {% endfor %}>
-              {{ dep_task.title }}
+              {{ member.username }}
             </option>
+          {% endfor %}
+        </select>
+        <p class="select-help">Przytrzymaj Ctrl (Windows) lub Cmd (Mac), aby wybrać wiele osób</p>
+        
+        {% if is_leader %}
+        <!-- Dependency management - only visible to group leaders -->
+        <label>Zależne od zadań</label>
+        <select name="dependency_tasks" multiple class="multi-select" size="6">
+          {% for other_task in all_tasks %}
+            <option value="{{ other_task.uid }}"
+              {% for dep in dependencies %}
+                {% if dep.uid == other_task.uid %}selected{% endif %}
+              {% endfor %}>
+              {{ other_task.title }}
+            </option>
+          {% endfor %}
+        </select>
+        <p class="select-help">To zadanie będzie zablokowane, dopóki zadania zależne nie zostaną zakończone</p>
+        {% else %}
+          <!-- Read-only dependency list for non-leaders -->
+          {% if dependencies %}
+          <label>Zadanie zależne od:</label>
+          <div class="dependencies-list">
+            <ul class="dependencies-ul">
+              {% for dep in dependencies %}
+                <li class="dependency-item {% if dep.status == "Zakończone" %}completed-dependency{% else %}pending-dependency{% endif %}">
+                  <span class="dependency-title">{{ dep.title }}</span>
+                  <span class="dependency-status">({{ dep.get_status_display }})</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <p class="select-help">To zadanie jest zablokowane, dopóki wszystkie zależności nie zostaną zakończone</p>
           {% endif %}
-        {% endfor %}
-      </select>
-      <p class="helptext">Przytrzymaj Ctrl aby wybrać wiele zadań</p>
+        {% endif %}
+      </div>
     </div>
-    {% endif %}
     
-    <button type="submit" class="btn">Zapisz</button>
+    <!-- Form action buttons -->
+    <div class="modal-footer">
+      <button type="submit" class="btn">Zapisz</button>
+      <a href="{% url 'group_detail' group.uid %}" class="btn cancel-btn">Anuluj</a>
+    </div>
   </form>
 </div>
-
-<script>
-  // JavaScript do sprawdzania cykli zależności
-  document.addEventListener('DOMContentLoaded', function() {
-    const dependencySelect = document.querySelector('select[name="dependencies"]');
-    if (dependencySelect) {
-      dependencySelect.addEventListener('change', function(e) {
-        const selectedOptions = Array.from(this.selectedOptions).map(option => option.value);
-        const taskUid = '{{ task.uid }}';
-        
-        // Sprawdzanie każdej nowo wybranej opcji
-        selectedOptions.forEach(depUid => {
-          fetch('/api/check-dependency/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-              task_uid: taskUid,
-              dependency_uid: depUid
-            })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.cycleDetected) {
-              alert(data.message);
-              // Odznaczamy opcję powodującą cykl
-              for (let i = 0; i < this.options.length; i++) {
-                if (this.options[i].value === depUid) {
-                  this.options[i].selected = false;
-                  break;
-                }
-              }
-            }
-          });
-        });
-      });
-    }
-    
-    // Funkcja pomocnicza do pobierania tokena CSRF
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
-      }
-      return cookieValue;
-    }
-  });
-</script>
 {% endblock %}

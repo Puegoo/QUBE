@@ -333,7 +333,6 @@ def add_member_view(request, group_uid):
     else:
         return redirect('group_detail', group_uid=group_uid)
 
-@neo4j_login_required
 def add_task_view(request, group_uid):
     try:
         group = Group.nodes.get(uid=group_uid)
@@ -377,14 +376,30 @@ def add_task_view(request, group_uid):
             except UserNode.DoesNotExist:
                 messages.warning(request, f"Nie znaleziono użytkownika: {username}")
 
-        # Dodawanie zależności zadań
+        # Dodawanie zależności zadań z weryfikacją przeciwko cyklicznym zależnościom
         dependency_tasks = request.POST.getlist('dependency_tasks')
         has_dependencies = False
+        
         for task_uid in dependency_tasks:
             try:
                 dependency_task = Task.nodes.get(uid=task_uid)
+                
+                # Sprawdzamy, czy nie tworzymy cyklicznej zależności
+                # Tworzymy tymczasową zależność, aby sprawdzić
                 new_task.depends_on.connect(dependency_task)
-                has_dependencies = True
+                
+                # Sprawdź czy nie tworzy się cykl
+                if check_for_circular_dependency(new_task):
+                    # Jeśli wykryto cykl, usuwamy zależność
+                    new_task.depends_on.disconnect(dependency_task)
+                    messages.warning(
+                        request, 
+                        f"Nie dodano zależności do zadania '{dependency_task.title}', "
+                        "ponieważ tworzyłoby to cykliczną zależność."
+                    )
+                else:
+                    has_dependencies = True
+                    
             except Task.DoesNotExist:
                 messages.warning(request, f"Nie znaleziono zadania o ID: {task_uid}")
 
@@ -400,7 +415,6 @@ def add_task_view(request, group_uid):
     else:
         return redirect('group_detail', group_uid=group_uid)
     
-@neo4j_login_required
 def edit_task_view(request, group_uid, task_uid):
     try:
         task = Task.nodes.get(uid=task_uid)
@@ -454,13 +468,29 @@ def edit_task_view(request, group_uid, task_uid):
                 except UserNode.DoesNotExist:
                     messages.warning(request, f"Użytkownik {username} nie istnieje.")
             
+            # Zapamietujemy stare zależności
+            old_dependencies = list(task.depends_on.all())
+            
             # Aktualizacja zależności zadań
             task.depends_on.disconnect_all()
             dependency_tasks = request.POST.getlist('dependency_tasks')
+            
             for dep_uid in dependency_tasks:
                 try:
                     dep_task = Task.nodes.get(uid=dep_uid)
+                    
+                    # Tymczasowo łączymy zależność
                     task.depends_on.connect(dep_task)
+                    
+                    # Sprawdź czy nie tworzy się cykl
+                    if check_for_circular_dependency(task):
+                        # Jeśli wykryto cykl, usuwamy zależność
+                        task.depends_on.disconnect(dep_task)
+                        messages.warning(
+                            request, 
+                            f"Nie dodano zależności do zadania '{dep_task.title}', "
+                            "ponieważ tworzyłoby to cykliczną zależność."
+                        )
                 except Task.DoesNotExist:
                     messages.warning(request, f"Zadanie zależne o ID {dep_uid} nie istnieje.")
         
@@ -697,3 +727,36 @@ def delete_task_view(request, group_uid, task_uid):
         return redirect('group_detail', group_uid=group_uid)
     
     return redirect('group_detail', group_uid=group_uid)
+
+
+def check_for_circular_dependency(task, visited=None, path=None):
+    """
+    Sprawdza, czy istnieje cykliczna zależność zaczynając od danego zadania.
+    
+    Args:
+        task: Zadanie, od którego zaczynamy sprawdzanie
+        visited: Zbiór odwiedzonych zadań (używane w rekurencji)
+        path: Aktualna ścieżka od początku rekurencji (używana w rekurencji)
+        
+    Returns:
+        bool: True jeśli wykryto cykl, False w przeciwnym wypadku
+    """
+    if visited is None:
+        visited = set()
+    if path is None:
+        path = set()
+    
+    visited.add(task.uid)
+    path.add(task.uid)
+    
+    for dependency in task.depends_on.all():
+        if dependency.uid not in visited:
+            if check_for_circular_dependency(dependency, visited, path):
+                return True
+        elif dependency.uid in path:
+            # Jeśli zadanie zależne jest już na ścieżce, mamy cykl
+            return True
+    
+    # Usuwamy zadanie ze ścieżki, gdy wracamy z rekurencji
+    path.remove(task.uid)
+    return False
